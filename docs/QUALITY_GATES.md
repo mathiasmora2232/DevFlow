@@ -96,3 +96,12 @@ Approval = permission to execute consequential action
 ```
 
 Do not merge these concepts.
+
+
+## v0.5 implementation
+
+`devflow gate` evaluates deterministic pull_request, staging, production and release policies.
+
+Current evidence flags include tests, build, rollback, healthcheck and verified CI. Missing mandatory evidence produces `unknown`; explicit failing checks produce `blocked`.
+
+Finding waivers are lifecycle-aware: active accepted-risk/suppressed findings do not block until their waiver expires.
