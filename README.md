@@ -86,6 +86,8 @@ Un proyecto puede ser sano y no usar tu stack favorito. Eso no debe penalizar su
 | `/traza` | Sincronizar actividad, pendientes y evidencia |
 | `/changelog` | Mantener cambios release-facing |
 | `/siguiente` | Determinar la siguiente acción de mayor impacto |
+| `/stellar-status` | Ver identidad, rol y permisos efectivos del MCP |
+| `/kanban` | Leer/mover tareas del Kanban compartido en StellarCode |
 
 Los comandos son alias humanos. La lógica real vive en `skills/*/SKILL.md`.
 
@@ -172,6 +174,22 @@ devflow /estado
 devflow /doctor
 devflow /docs
 devflow /secretos
+devflow stellar-bind --project-id 10
+devflow /stellar-status
+devflow /proyectos
+devflow /roles
+devflow /miembros
+devflow /kanban
+devflow /decision
+devflow /planificar "Nueva implementación" --stellar
+devflow /traza --stellar
+devflow /siguiente
 ```
 
 La v0.2 realiza auditoría estática conservadora. Datos de carga real y salud de producción permanecen `N/A` hasta que existan adaptadores runtime/MCP con evidencia.
+
+## StellarCode MCP
+
+DevFlow v0.4 puede usar `https://api.stellarcodelabs.lat/mcp` como capa operacional compartida. El JWT del usuario se obtiene desde la variable de entorno `STELLARCODE_TOKEN`; nunca se persiste en `.devflow.yml`.
+
+La seguridad real vive en StellarCode: usuario autenticado + membresía del proyecto + rol + permiso atómico. Git continúa siendo la fuente de evidencia técnica y StellarCode el estado vivo del backlog/Kanban.

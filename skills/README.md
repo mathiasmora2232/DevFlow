@@ -28,3 +28,4 @@
 - [`doctor`](./doctor/SKILL.md) — Diagnostica entorno, tooling y espacio libre antes de operar.
 - [`docs`](./docs/SKILL.md) — Audita documentación técnica y operativa.
 - [`secretos`](./secretos/SKILL.md) — Detecta posibles secretos sin exponerlos en salida.
+- [`stellarcode-sync`](./stellarcode-sync/SKILL.md) — Conecta DevFlow con StellarCode MCP para identidad, RBAC, Kanban y backlog compartido.

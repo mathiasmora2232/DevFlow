@@ -2,7 +2,7 @@
 
 ## Decisión
 
-MCP no es el core. Es una capa opcional de herramientas vivas.
+MCP no es el core. Es una capa opcional de herramientas vivas. Desde v0.4 StellarCode MCP es la primera integración operacional oficial de DevFlow.
 
 El core debe poder razonar y operar sobre archivos locales/Git sin MCP.
 
@@ -62,3 +62,23 @@ Cuando sea necesario consultar o ejecutar acciones fuera del repositorio:
 ## Seguridad
 
 El MCP debe implementar scopes y approval gates. Nunca usar una tool de producción como efecto secundario de un skill de lectura.
+
+## StellarCode v0.4
+
+Implementado:
+
+- binding por `project_id`;
+- JWT real vía variable de entorno;
+- identidad MCP;
+- RBAC por proyecto;
+- Kanban compartido;
+- planificación remote-first;
+- snapshot de traza;
+- siguiente acción desde backlog vivo;
+- activity/audit log por usuario, cliente y request.
+
+Pendiente después del v0.4:
+
+- OAuth 2.1 interactivo completo para clientes que no acepten bearer token manual;
+- GitHub/CI como evidencia automática;
+- Grafana/k6/Cloudflare/k3s runtime adapters.
