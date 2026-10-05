@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from .findings import waiver_active
 from .utils import now_iso
 
 
@@ -107,7 +108,14 @@ def evaluate_gate(gate: str, config: dict[str, Any], audit: dict[str, Any] | Non
     findings = audit.get("findings", []) if audit else []
     for severity_key, severity in (("critical_security", "critical"), ("high_security", "high")):
         if severity_key in policy:
-            count = sum(1 for f in findings if f.get("category") == "security" and f.get("severity") == severity and f.get("status", "open") not in {"closed", "false_positive", "suppressed"})
+            count = sum(
+                1
+                for f in findings
+                if f.get("category") == "security"
+                and f.get("severity") == severity
+                and f.get("status", "open") not in {"fixed", "verified", "closed", "false_positive", "suppressed"}
+                and not waiver_active(f)
+            )
             checks.append(GateCheck(severity_key, "pass" if count <= int(policy[severity_key]) else "blocked", policy[severity_key], count))
 
     evidence_map = {
