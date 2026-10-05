@@ -6,10 +6,12 @@ from typing import Any
 
 import yaml
 
-CURRENT_SCHEMA_VERSION = 2
+CURRENT_SCHEMA_VERSION = 3
 
 ALLOWED_STAGES = {"prototype", "mvp", "growth", "production", "legacy"}
 ALLOWED_CRITICALITY = {"low", "medium", "high", "critical"}
+ALLOWED_OWNERSHIP = {"internal", "external_client"}
+ALLOWED_ENGAGEMENT = {"greenfield", "migration", "refactor", "modernization", "maintenance", "audit_only"}
 ALLOWED_PROFILES = {
     "prototype", "mvp", "production", "enterprise",
     "legacy-modernization", "external-audit", "high-security", "high-traffic",
@@ -51,7 +53,7 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
             errors.append({"path": key, "message": "unknown top-level key"})
 
     version = config_schema_version(data)
-    if version not in {1, CURRENT_SCHEMA_VERSION}:
+    if version not in {1, 2, CURRENT_SCHEMA_VERSION}:
         errors.append({"path": "schema_version", "message": f"unsupported schema version {version}"})
 
     project = data.get("project")
@@ -59,7 +61,10 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
         errors.append({"path": "project", "message": "project section is required"})
         return errors
 
-    for key in ("name", "slug", "stage", "criticality"):
+    required_project_keys = ["name", "slug", "stage", "criticality"]
+    if version >= 3:
+        required_project_keys += ["ownership", "engagement"]
+    for key in required_project_keys:
         if not project.get(key):
             errors.append({"path": f"project.{key}", "message": "required"})
 
@@ -67,6 +72,10 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
         errors.append({"path": "project.stage", "message": f"invalid stage: {project['stage']}"})
     if project.get("criticality") and project["criticality"] not in ALLOWED_CRITICALITY:
         errors.append({"path": "project.criticality", "message": f"invalid criticality: {project['criticality']}"})
+    if project.get("ownership") and project["ownership"] not in ALLOWED_OWNERSHIP:
+        errors.append({"path": "project.ownership", "message": f"invalid ownership: {project['ownership']}"})
+    if project.get("engagement") and project["engagement"] not in ALLOWED_ENGAGEMENT:
+        errors.append({"path": "project.engagement", "message": f"invalid engagement: {project['engagement']}"})
 
     profile = data.get("profile")
     if profile and profile not in ALLOWED_PROFILES:
@@ -125,6 +134,14 @@ def migrate_config(data: dict[str, Any], target_version: int = CURRENT_SCHEMA_VE
                 auth.setdefault("mode", "bearer")
                 auth.setdefault("token_env", "STELLARCODE_TOKEN")
         source_version = 2
+
+    if source_version == 2 and target_version >= 3:
+        migrated["schema_version"] = 3
+        project = migrated.setdefault("project", {})
+        project.setdefault("ownership", "internal")
+        project.setdefault("engagement", "modernization" if project.get("stage") == "legacy" else "greenfield")
+        project.setdefault("client_id", None)
+        source_version = 3
 
     if source_version != target_version:
         raise ValueError(f"no migration path from {config_schema_version(data)} to {target_version}")

@@ -2,61 +2,25 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "DevFlow Project Config",
   "type": "object",
-  "required": [
-    "schema_version",
-    "project"
-  ],
+  "required": ["schema_version", "project"],
   "properties": {
-    "schema_version": {
-      "const": 2
-    },
-    "profile": {
-      "type": "string"
-    },
+    "schema_version": {"const": 3},
+    "profile": {"type": "string"},
     "project": {
       "type": "object",
-      "required": [
-        "name",
-        "slug",
-        "stage",
-        "criticality"
-      ],
+      "required": ["name", "slug", "stage", "criticality", "ownership", "engagement"],
       "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1
-        },
-        "slug": {
-          "type": "string",
-          "minLength": 1
-        },
-        "stage": {
-          "enum": [
-            "prototype",
-            "mvp",
-            "growth",
-            "production",
-            "legacy"
-          ]
-        },
-        "criticality": {
-          "enum": [
-            "low",
-            "medium",
-            "high",
-            "critical"
-          ]
-        }
+        "name": {"type": "string", "minLength": 1},
+        "slug": {"type": "string", "minLength": 1},
+        "stage": {"enum": ["prototype", "mvp", "growth", "production", "legacy"]},
+        "criticality": {"enum": ["low", "medium", "high", "critical"]},
+        "ownership": {"enum": ["internal", "external_client"]},
+        "engagement": {"enum": ["greenfield", "migration", "refactor", "modernization", "maintenance", "audit_only"]},
+        "client_id": {"type": ["integer", "null"]}
       }
     },
-    "providers": {
-      "type": "object"
-    },
-    "gates": {
-      "type": "object"
-    },
-    "stellarcode": {
-      "type": "object"
-    }
+    "providers": {"type": "object"},
+    "gates": {"type": "object"},
+    "stellarcode": {"type": "object"}
   }
 }

@@ -1,4 +1,4 @@
-schema_version: 2
+schema_version: 3
 profile: mvp
 providers: {}
 gates: {}
@@ -11,6 +11,9 @@ project:
   criticality: "medium" # low | medium | high | critical
   expected_traffic: "unknown"
   budget_profile: "lean"
+  ownership: "internal"
+  engagement: "greenfield"
+  client_id:
 
 preferences:
   philosophy: "simple-first"

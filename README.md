@@ -91,8 +91,8 @@ Un proyecto puede ser sano y no usar tu stack favorito. Eso no debe penalizar su
 | `/traza` | Sincronizar actividad, pendientes y evidencia |
 | `/changelog` | Mantener cambios release-facing |
 | `/siguiente` | Determinar la siguiente acción de mayor impacto |
-| `/stellar-status` | Ver identidad, rol y permisos efectivos del MCP |
-| `/kanban` | Leer/mover tareas del Kanban compartido en StellarCode |
+| `/descubrir` | Crear baseline de adopción: stack, config metadata, infra, secretos y scores |\n| `/stellar-status` | Ver identidad, rol y permisos efectivos del MCP |
+| `/kanban` | Leer/mover tareas del Kanban compartido en StellarCode |\n| `/time` | Time tracking obligatorio a través del MCP (no usa shadow state local) |
 
 Los comandos son alias humanos. La lógica real vive en `skills/*/SKILL.md`.
 
@@ -163,7 +163,7 @@ Las integraciones profundas por stack, GitHub/CI/CD, Cloudflare, Kubernetes, Gra
 
 Ver `DEVFLOW_ROADMAP.md` y `docs/MCP_ROADMAP.md`.
 
-## CLI ejecutable (v0.5)
+## CLI ejecutable (v0.5.1)
 
 Instalación local:
 
@@ -175,7 +175,7 @@ Flujo base:
 
 ```bash
 devflow /nuevo-proyecto
-devflow /auditar
+devflow /descubrir\ndevflow /auditar
 devflow /puntuar
 devflow /revisar-stack
 devflow /planificar "Nueva implementación"
@@ -189,7 +189,7 @@ devflow config show
 devflow config migrate --check
 devflow /findings
 devflow /gate pull_request
-devflow stellar-bind --project-id 10
+devflow stellar-capabilities\ndevflow stellar-adopt\ndevflow stellar-bind --project-id 10
 devflow /stellar-status
 devflow /proyectos
 devflow /roles
@@ -198,7 +198,7 @@ devflow /kanban
 devflow /decision
 devflow /planificar "Nueva implementación" --stellar
 devflow /traza --stellar
-devflow /siguiente
+devflow /siguiente\ndevflow stellar-sync --dry-run\ndevflow /time summary
 ```
 
 La auditoría estática sigue siendo conservadora y ahora mantiene findings persistentes/reconciliables. Datos de carga real y salud de producción permanecen `N/A` hasta que existan adaptadores runtime/MCP con evidencia.
@@ -223,4 +223,4 @@ Para continuar DevFlow con Claude Code u otro agente, usar esta secuencia:
 4. `CLAUDE.md` / `AGENTS.md`
 5. `ops/BACKLOG.md`
 
-La siguiente versión recomendada es **v0.6 Analyzers**. v0.5 ya dejó los contratos base implementados.
+v0.5.1 ya implementa el core local de discovery/adoption. El siguiente trabajo es completar el lado StellarCode MCP v3 para convertir los bridges en sync estructurado y, en paralelo posterior, avanzar v0.6 Analyzers.
