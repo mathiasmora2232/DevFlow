@@ -49,3 +49,19 @@ def test_closed_security_finding_does_not_block():
         {"tests": True, "build": True, "rollback": True, "healthcheck": True, "verified_ci": True},
     )
     assert result.result == "pass"
+
+
+def test_active_accepted_risk_waiver_does_not_block():
+    findings = [{
+        "category": "security",
+        "severity": "critical",
+        "status": "accepted_risk",
+        "waiver": {"reason": "temporary", "approved_by": "owner", "expires_at": "2099-01-01"},
+    }]
+    result = evaluate_gate(
+        "production",
+        config(),
+        audit(findings=findings),
+        {"tests": True, "build": True, "rollback": True, "healthcheck": True, "verified_ci": True},
+    )
+    assert result.result == "pass"
