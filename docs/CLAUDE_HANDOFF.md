@@ -38,9 +38,9 @@ Do not reimplement these under new names without a migration reason.
 
 ## Recommended release sequence
 
-### v0.5 — Foundations
+### v0.5 — Foundations ✅ implemented
 
-Build the contracts required before scaling features:
+Implemented:
 
 - canonical domain types/schemas;
 - finding lifecycle, fingerprinting and reconciliation;
@@ -52,9 +52,9 @@ Build the contracts required before scaling features:
 - service-identity-ready principal model;
 - tests for all above.
 
-Do not prioritize dozens of analyzers before this foundation exists.
+The foundation now exists. Do not reimplement it under new names.
 
-### v0.6 — Analyzers
+### v0.6 — Analyzers ← next
 
 Implement plugin/registry architecture and high-value analyzers first:
 
