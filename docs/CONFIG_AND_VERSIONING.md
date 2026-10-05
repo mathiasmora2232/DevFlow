@@ -10,9 +10,9 @@ Early configs use:
 version: 1
 ```
 
-Future development must formalize this as a schema version rather than treating YAML shape as implicit.
+v0.5 formalizes configuration as a versioned contract. Legacy v1 remains readable and can be migrated.
 
-## Target format
+## Current v2 format
 
 ```yaml
 schema_version: 2
@@ -32,9 +32,7 @@ stellarcode:
   ...
 ```
 
-## Required commands
-
-Target for the next foundation release:
+## Implemented commands
 
 ```bash
 devflow validate
@@ -82,7 +80,7 @@ At v1.0:
 
 ## Report versioning
 
-JSON outputs should eventually include:
+Versioned machine-readable outputs now include:
 
 ```json
 {
