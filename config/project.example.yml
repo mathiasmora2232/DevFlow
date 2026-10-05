@@ -67,6 +67,21 @@ approvals:
   dns_change: true
   shared_infrastructure_change: true
 
+stellarcode:
+  enabled: false
+  mcp_url: "https://api.stellarcodelabs.lat/mcp"
+  project_id:
+  client_name: "devflow-cli"
+  auth:
+    mode: "bearer"
+    token_env: "STELLARCODE_TOKEN"
+  sync:
+    backlog: "remote_first"
+    trace: true
+    evidence: true
+    decisions: true
+    risks: true
+
 trace:
   enabled: true
   timezone: "America/Guayaquil"
