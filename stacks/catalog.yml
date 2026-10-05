@@ -1,0 +1,72 @@
+version: 1
+
+backend:
+  fastapi:
+    family: python
+    use_when:
+      - rapid APIs
+      - Python ecosystem matters
+      - async APIs or data tooling
+    strengths: [speed-of-development, typing, docs, ecosystem]
+  go:
+    family: go
+    use_when:
+      - low overhead services
+      - concurrency
+      - simple deployment binary
+    strengths: [performance, operational-simplicity, concurrency]
+  nodejs:
+    family: javascript
+    use_when:
+      - JS/TS team
+      - real-time or I/O heavy services
+      - fast product iteration
+    strengths: [ecosystem, team-unification, iteration]
+  quarkus:
+    family: java
+    use_when:
+      - enterprise Java
+      - strong typing/domain complexity
+      - existing Java ecosystem
+    strengths: [enterprise, performance, java-ecosystem]
+  php:
+    family: php
+    use_when:
+      - existing PHP ecosystem
+      - content/business apps
+      - low-cost hosting
+    strengths: [maturity, hosting, ecosystem]
+
+frontend:
+  angular:
+    strengths: [structure, enterprise, conventions]
+  nextjs:
+    strengths: [fullstack-web, SSR, SEO, ecosystem]
+  react:
+    strengths: [ecosystem, flexibility]
+  javascript:
+    strengths: [simplicity, portability]
+  tailwind:
+    type: styling
+    strengths: [velocity, consistency]
+
+database:
+  postgresql:
+    strengths: [relational, extensions, robustness, json]
+  mariadb:
+    strengths: [mysql-compatibility, operational-familiarity]
+  sqlite:
+    strengths: [simplicity, embedded, low-ops]
+
+devops:
+  ubuntu-server: {}
+  docker: {}
+  cloudflare: {}
+  kubernetes: {}
+  k3s: {}
+  github-actions: {}
+  grafana: {}
+  prometheus: {}
+  netdata: {}
+  sentry: {}
+  k6: {}
