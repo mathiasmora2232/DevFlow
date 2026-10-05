@@ -29,3 +29,7 @@
 - [`docs`](./docs/SKILL.md) — Audita documentación técnica y operativa.
 - [`secretos`](./secretos/SKILL.md) — Detecta posibles secretos sin exponerlos en salida.
 - [`stellarcode-sync`](./stellarcode-sync/SKILL.md) — Conecta DevFlow con StellarCode MCP para identidad, RBAC, Kanban y backlog compartido.
+
+- [`configuracion`](./configuracion/SKILL.md) — Valida y migra configuración versionada.
+- [`findings`](./findings/SKILL.md) — Lifecycle, fingerprints, reconciliación y waivers de hallazgos.
+- [`gate`](./gate/SKILL.md) — Quality gates deterministas separados de scores y approvals.
