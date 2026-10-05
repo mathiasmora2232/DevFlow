@@ -14,6 +14,18 @@ ALLOWED_PROFILES = {
     "prototype", "mvp", "production", "enterprise",
     "legacy-modernization", "external-audit", "high-security", "high-traffic",
 }
+DEFAULT_PROFILE_BY_STAGE = {
+    "prototype": "prototype",
+    "mvp": "mvp",
+    "growth": "production",
+    "production": "production",
+    "legacy": "legacy-modernization",
+}
+
+
+def default_profile_for_stage(stage: str | None) -> str:
+    return DEFAULT_PROFILE_BY_STAGE.get(str(stage or "mvp"), "mvp")
+
 
 ALLOWED_TOP_LEVEL = {
     "version", "schema_version", "profile", "project", "providers", "gates",
@@ -56,8 +68,8 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
     if project.get("criticality") and project["criticality"] not in ALLOWED_CRITICALITY:
         errors.append({"path": "project.criticality", "message": f"invalid criticality: {project['criticality']}"})
 
-    profile = data.get("profile") or project.get("stage")
-    if profile and profile not in ALLOWED_PROFILES and profile not in ALLOWED_STAGES:
+    profile = data.get("profile")
+    if profile and profile not in ALLOWED_PROFILES:
         errors.append({"path": "profile", "message": f"unknown profile: {profile}"})
 
     stellar = data.get("stellarcode", {})
@@ -147,7 +159,7 @@ def config_summary(data: dict[str, Any]) -> dict[str, Any]:
     return {
         "schema_version": config_schema_version(data),
         "project": data.get("project", {}),
-        "profile": data.get("profile") or data.get("project", {}).get("stage"),
+        "profile": data.get("profile") or default_profile_for_stage(data.get("project", {}).get("stage")),
         "providers": sorted((data.get("providers") or {}).keys()),
         "stellarcode_enabled": bool(data.get("stellarcode", {}).get("enabled")),
         "gates": sorted((data.get("gates") or {}).keys()),
