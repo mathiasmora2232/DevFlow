@@ -61,7 +61,10 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
         errors.append({"path": "project", "message": "project section is required"})
         return errors
 
-    for key in ("name", "slug", "stage", "criticality"):
+    required_project_keys = ["name", "slug", "stage", "criticality"]
+    if version >= 3:
+        required_project_keys += ["ownership", "engagement"]
+    for key in required_project_keys:
         if not project.get(key):
             errors.append({"path": f"project.{key}", "message": "required"})
 
