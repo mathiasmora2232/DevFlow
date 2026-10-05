@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Idempotency Store",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "devflow_version",
+    "entries"
+  ],
+  "properties": {
+    "schema": {
+      "const": "devflow.idempotency"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "devflow_version": {
+      "type": "string"
+    },
+    "entries": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object"
+      }
+    }
+  }
+}
