@@ -1,5 +1,7 @@
 # Sync, Conflict and Idempotency Model
 
+> Implemented in DevFlow v0.5. This document remains the canonical behavioral contract.
+
 DevFlow spans local files, Git and StellarCode. Synchronization must be explicit and deterministic.
 
 ## Source authority by domain
