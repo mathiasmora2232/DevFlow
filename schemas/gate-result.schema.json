@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Gate Result",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "gate",
+    "result",
+    "checks",
+    "missing_evidence",
+    "timestamp"
+  ],
+  "properties": {
+    "schema": {
+      "const": "devflow.gate-result"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "gate": {
+      "type": "string"
+    },
+    "result": {
+      "enum": [
+        "pass",
+        "warn",
+        "blocked",
+        "unknown"
+      ]
+    },
+    "checks": {
+      "type": "array"
+    },
+    "missing_evidence": {
+      "type": "array"
+    },
+    "timestamp": {
+      "type": "string"
+    }
+  }
+}
