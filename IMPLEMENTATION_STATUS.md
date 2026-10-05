@@ -18,7 +18,7 @@
 - `/doctor`: environment/tooling/disk readiness.
 - `/docs`: documentation coverage score/report.
 - `/secretos`: redacted secret scanning + CI threshold.
-- 13 automated tests.
+- Expanded automated test suite covering CLI, config migrations, findings, gates, providers, sync/idempotency and regressions.
 - StellarCode MCP client and project binding.
 - `/stellar-status`: authenticated identity, project role and permissions.
 - `/kanban`: shared task board read/move operations.
