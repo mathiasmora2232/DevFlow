@@ -154,4 +154,10 @@ def evaluate_gate(gate: str, config: dict[str, Any], audit: dict[str, Any] | Non
         for key, value in evidence.items()
         if value is not None
     ]
-    return GateResult(gate, result, [c.to_dict() for c in checks], evidence_items, missing)
+    return GateResult(
+        gate=gate,
+        result=result,
+        checks=[check.to_dict() for check in checks],
+        evidence=evidence_items,
+        missing_evidence=missing,
+    )
