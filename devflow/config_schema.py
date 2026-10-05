@@ -69,7 +69,10 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
         auth = stellar.get("auth", {})
         forbidden = [key for key in auth if str(key).lower() in {"token", "secret", "password", "access_token"}]
         if forbidden:
-            errors.append({"path": "stellarcode.auth", "message": "raw credentials must not be stored in config; use token_env"})
+            errors.append({
+                "path": f"stellarcode.auth.{forbidden[0]}",
+                "message": "raw credentials must not be stored in config; use token_env",
+            })
         if auth.get("mode") == "bearer" and not auth.get("token_env"):
             errors.append({"path": "stellarcode.auth.token_env", "message": "required for bearer auth"})
 
@@ -90,7 +93,15 @@ def migrate_config(data: dict[str, Any], target_version: int = CURRENT_SCHEMA_VE
         migrated.pop("version", None)
         migrated["schema_version"] = 2
         project = migrated.setdefault("project", {})
-        migrated.setdefault("profile", project.get("stage") or "mvp")
+        stage = str(project.get("stage") or "mvp")
+        profile = {
+            "prototype": "prototype",
+            "mvp": "mvp",
+            "growth": "production",
+            "production": "production",
+            "legacy": "legacy-modernization",
+        }.get(stage, "mvp")
+        migrated.setdefault("profile", profile)
         migrated.setdefault("providers", {})
         migrated.setdefault("gates", {})
         stellar = migrated.setdefault("stellarcode", {})
