@@ -98,8 +98,16 @@ Comandos:
 
 ```bash
 devflow /stellar-status
+devflow /proyectos
+devflow /roles
+devflow /miembros
+devflow /miembros add --user-id 7 --role developer
+devflow /miembros role --user-id 7 --role reviewer
+devflow /miembros remove --user-id 7
 devflow /kanban
 devflow /kanban move --task-id 184 --status review
+devflow /decision
+devflow /decision add --title "Usar PostgreSQL" --decision "Mantener PostgreSQL como base principal"
 devflow /planificar "Agregar historial" --stellar
 devflow /traza --stellar
 devflow /siguiente
