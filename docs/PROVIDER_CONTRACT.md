@@ -1,5 +1,7 @@
 # Provider Contract
 
+> Implemented in DevFlow v0.5. This document remains the canonical behavioral contract.
+
 Providers connect DevFlow to external systems without contaminating core logic with provider-specific branches.
 
 ## Design rule
