@@ -149,4 +149,9 @@ def evaluate_gate(gate: str, config: dict[str, Any], audit: dict[str, Any] | Non
     else:
         result = "pass"
 
-    return GateResult(gate, result, [c.to_dict() for c in checks], [], missing)
+    evidence_items = [
+        {"type": key, "verified": value}
+        for key, value in evidence.items()
+        if value is not None
+    ]
+    return GateResult(gate, result, [c.to_dict() for c in checks], evidence_items, missing)
