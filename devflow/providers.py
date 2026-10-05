@@ -70,3 +70,26 @@ def supports(provider: Provider, capability: str) -> bool:
 def require_capability(provider: Provider, capability: str) -> None:
     if not supports(provider, capability):
         raise ValueError(f"{ProviderErrorCode.UNSUPPORTED_CAPABILITY.value}: {provider.id} lacks {capability}")
+
+
+class ProviderRegistry:
+    def __init__(self) -> None:
+        self._providers: dict[str, Provider] = {}
+
+    def register(self, provider: Provider, *, replace: bool = False) -> None:
+        if provider.id in self._providers and not replace:
+            raise ValueError(f"provider already registered: {provider.id}")
+        self._providers[provider.id] = provider
+
+    def get(self, provider_id: str) -> Provider:
+        if provider_id not in self._providers:
+            raise KeyError(f"unknown provider: {provider_id}")
+        return self._providers[provider_id]
+
+    def list(self) -> list[str]:
+        return sorted(self._providers)
+
+    def require(self, provider_id: str, capability: str) -> Provider:
+        provider = self.get(provider_id)
+        require_capability(provider, capability)
+        return provider
