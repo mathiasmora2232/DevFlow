@@ -1,5 +1,7 @@
 # DevFlow Domain Model
 
+> Implemented in DevFlow v0.5. This document remains the canonical behavioral contract.
+
 > Canonical conceptual model for DevFlow. This document defines names, identities and ownership boundaries before implementation details.
 
 ## Core entities
