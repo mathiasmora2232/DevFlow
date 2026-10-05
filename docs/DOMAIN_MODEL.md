@@ -6,6 +6,22 @@
 
 ## Core entities
 
+### Client / Ownership
+
+Projects are explicitly classified as `internal` or `external_client`. External projects reference a canonical StellarCode client record. Ownership and engagement type are operational project metadata, not free-text notes.
+
+Canonical engagement types:
+
+```text
+greenfield
+migration
+refactor
+modernization
+maintenance
+audit_only
+```
+
+
 ### Project
 
 Represents one product/system/business initiative. A project can own one or many repositories.
@@ -268,6 +284,41 @@ permissions[]
 
 The MCP server is authoritative for project authorization.
 
+### TimeSession / TimeEntry
+
+Time tracking is mandatory for managed work and is operationally owned by StellarCode.
+
+A TimeSession represents live timer state. A TimeEntry is the durable historical record.
+
+```text
+TimeSession
+  id
+  project_id
+  work_item_id?
+  principal
+  category
+  started_at
+  status
+  source
+
+TimeEntry
+  id
+  project_id
+  work_item_id?
+  principal
+  category
+  started_at
+  ended_at
+  duration_seconds
+  billable
+  description
+  source
+  corrected_from?
+  evidence[]
+```
+
+Corrections must be auditable and must not silently destroy prior history.
+
 ### Provider
 
 External system adapter. Contract defined in `docs/PROVIDER_CONTRACT.md`.
@@ -278,6 +329,8 @@ External system adapter. Contract defined in `docs/PROVIDER_CONTRACT.md`.
 |---|---|
 | Source code / commits / branches | Git provider |
 | Project operational state | StellarCode |
+| Client ownership / engagement type | StellarCode |
+| Time tracking | StellarCode MCP |
 | DevFlow local config | `.devflow.yml` |
 | Static reports | DevFlow local files |
 | Runtime metrics | Runtime provider |
