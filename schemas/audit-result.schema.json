@@ -3,12 +3,25 @@
   "title": "DevFlow Audit Result",
   "type": "object",
   "required": [
+    "schema",
+    "schema_version",
+    "devflow_version",
     "project_health_score",
     "stack_fit_score",
     "evidence_confidence",
-    "categories"
+    "categories",
+    "findings"
   ],
   "properties": {
+    "schema": {
+      "const": "devflow.audit"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "devflow_version": {
+      "type": "string"
+    },
     "project_health_score": {
       "type": [
         "number",
@@ -35,6 +48,9 @@
     },
     "findings": {
       "type": "array"
+    },
+    "finding_reconciliation": {
+      "type": "object"
     },
     "unknowns": {
       "type": "array"
