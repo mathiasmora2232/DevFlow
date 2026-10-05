@@ -58,8 +58,9 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
         if not stellar.get("mcp_url"):
             errors.append({"path": "stellarcode.mcp_url", "message": "required when enabled"})
         auth = stellar.get("auth", {})
-        if "token" in auth:
-            errors.append({"path": "stellarcode.auth.token", "message": "raw tokens must not be stored in config"})
+        forbidden = [key for key in auth if str(key).lower() in {"token", "secret", "password", "access_token"}]
+        if forbidden:
+            errors.append({"path": "stellarcode.auth", "message": "raw credentials must not be stored in config; use token_env"})
         if auth.get("mode") == "bearer" and not auth.get("token_env"):
             errors.append({"path": "stellarcode.auth.token_env", "message": "required for bearer auth"})
 
@@ -83,6 +84,14 @@ def migrate_config(data: dict[str, Any], target_version: int = CURRENT_SCHEMA_VE
         migrated.setdefault("profile", project.get("stage") or "mvp")
         migrated.setdefault("providers", {})
         migrated.setdefault("gates", {})
+        stellar = migrated.setdefault("stellarcode", {})
+        if isinstance(stellar, dict):
+            auth = stellar.setdefault("auth", {})
+            if isinstance(auth, dict):
+                for key in ("token", "secret", "password", "access_token"):
+                    auth.pop(key, None)
+                auth.setdefault("mode", "bearer")
+                auth.setdefault("token_env", "STELLARCODE_TOKEN")
         source_version = 2
 
     if source_version != target_version:
@@ -97,12 +106,21 @@ def migrate_config_file(root: Path, check: bool = False) -> dict[str, Any]:
     data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
     migrated = migrate_config(data)
     changed = migrated != data
+    diff = config_diff_text(data, migrated)
+    backup = None
     if changed and not check:
-        backup = root / ".devflow.yml.v1.bak"
+        backup = root / f".devflow.yml.v{config_schema_version(data)}.bak"
         if not backup.exists():
             backup.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
         path.write_text(yaml.safe_dump(migrated, sort_keys=False, allow_unicode=True), encoding="utf-8")
-    return {"changed": changed, "from": config_schema_version(data), "to": CURRENT_SCHEMA_VERSION, "config": migrated}
+    return {
+        "changed": changed,
+        "from": config_schema_version(data),
+        "to": CURRENT_SCHEMA_VERSION,
+        "config": migrated,
+        "diff": diff,
+        "backup": str(backup) if backup else None,
+    }
 
 
 def config_summary(data: dict[str, Any]) -> dict[str, Any]:
@@ -114,3 +132,17 @@ def config_summary(data: dict[str, Any]) -> dict[str, Any]:
         "stellarcode_enabled": bool(data.get("stellarcode", {}).get("enabled")),
         "gates": sorted((data.get("gates") or {}).keys()),
     }
+
+
+def config_diff_text(before: dict[str, Any], after: dict[str, Any]) -> str:
+    import difflib
+    old = yaml.safe_dump(before, sort_keys=False, allow_unicode=True).splitlines(keepends=True)
+    new = yaml.safe_dump(after, sort_keys=False, allow_unicode=True).splitlines(keepends=True)
+    return "".join(
+        difflib.unified_diff(
+            old,
+            new,
+            fromfile=".devflow.yml",
+            tofile=".devflow.yml (migrated)",
+        )
+    )
