@@ -212,3 +212,23 @@ def update_finding_status(
     if found:
         save_findings(root, findings)
     return found
+
+
+def waiver_active(finding: dict[str, Any]) -> bool:
+    if finding.get("status") not in {
+        FindingStatus.ACCEPTED_RISK.value,
+        FindingStatus.SUPPRESSED.value,
+    }:
+        return False
+    waiver = finding.get("waiver") or {}
+    expires_at = waiver.get("expires_at")
+    if not expires_at:
+        return True
+    from datetime import datetime, timezone
+    try:
+        expires = datetime.fromisoformat(str(expires_at).replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    return datetime.now(timezone.utc) <= expires
