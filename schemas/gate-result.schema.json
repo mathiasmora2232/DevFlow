@@ -5,6 +5,7 @@
   "required": [
     "schema",
     "schema_version",
+    "devflow_version",
     "gate",
     "result",
     "checks",
@@ -36,6 +37,9 @@
       "type": "array"
     },
     "timestamp": {
+      "type": "string"
+    },
+    "devflow_version": {
       "type": "string"
     }
   }
