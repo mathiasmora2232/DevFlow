@@ -13,36 +13,19 @@
 - Enable writes after read/RBAC verification.
 - Retire legacy shared-secret access after clients migrate.
 
-## P1 — DevFlow v0.5 Foundations
-
-- Implement canonical domain models from `docs/DOMAIN_MODEL.md`.
-- Implement Finding model.
-- Stable finding fingerprint.
-- Audit reconciliation: new/persistent/fixed/regressed.
-- Finding waiver metadata and expiry.
-- Formal config schema.
-- `devflow validate`.
-- Config migration framework and `devflow config migrate --check`.
-- Provider/capability interface.
-- Normalized provider errors/results.
-- SyncResult model.
-- Conflict detection.
-- Idempotency/event primitives.
-- Quality gate engine.
-- Operational profiles.
-- Principal model ready for user/automation identity.
-- Add schema/version metadata to machine-readable outputs.
-- Expand tests around conflicts, migrations and false positives.
-
-## P2 — DevFlow v0.6 Analyzers
+## P1 — DevFlow v0.6 Analyzers
 
 First wave:
+- Analyzer registry/plugin architecture.
 - FastAPI/Python.
 - Node/Next/React.
 - Angular.
 - PostgreSQL.
 - Docker.
 - GitHub Actions.
+- Findings must use the canonical v0.5 contract.
+- Tool errors must not be confused with findings.
+- Add false-positive regression fixtures.
 
 Second wave:
 - Go.
@@ -54,7 +37,7 @@ Second wave:
 - Dead-code adapters.
 - Duplication analyzers.
 
-## P3 — DevFlow v0.7 GitHub / CI
+## P2 — DevFlow v0.7 GitHub / CI
 
 - GitHub provider.
 - PR read/create/review.
@@ -65,10 +48,18 @@ Second wave:
 - StellarCode sync.
 - Release metadata.
 
-## P4 — DevFlow v0.8/v0.9 Operations
+## P3 — DevFlow v0.8 Release / Deploy
 
-- Release/deploy/rollback providers.
-- Production verification.
+- Release provider contract implementation.
+- Deployment records.
+- Preflight.
+- Migration awareness.
+- Rollback references.
+- Smoke verification.
+- Approval-gated production operations.
+
+## P4 — DevFlow v0.9 Runtime / Observability
+
 - k6.
 - Grafana/Prometheus.
 - Sentry.
