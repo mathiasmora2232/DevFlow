@@ -1,5 +1,7 @@
 # Finding Lifecycle
 
+> Implemented in DevFlow v0.5. This document remains the canonical behavioral contract.
+
 Findings are durable technical issues, not disposable lines in an audit report.
 
 ## Goals
