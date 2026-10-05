@@ -1,0 +1,35 @@
+version: 1
+
+dimensions:
+  personal_alignment:
+    weight: 25
+  team_familiarity:
+    weight: 15
+  project_fit:
+    weight: 25
+  operating_cost:
+    weight: 10
+  delivery_speed:
+    weight: 10
+  ecosystem_and_support:
+    weight: 5
+  migration_cost:
+    weight: 5
+  future_flexibility:
+    weight: 5
+
+decision:
+  keep:
+    minimum: 80
+  keep_with_improvements:
+    minimum: 65
+  evaluate_partial_migration:
+    minimum: 45
+  migration_candidate:
+    maximum: 44
+
+rules:
+  - Do not recommend migration from alignment score alone.
+  - Technical health and project fit outrank personal preference.
+  - Include migration cost and business benefit.
+  - Prefer incremental migration when practical.
