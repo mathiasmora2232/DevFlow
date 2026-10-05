@@ -19,7 +19,7 @@ Before implementing a release, read:
 
 ## Current baseline
 
-DevFlow main is v0.4 code-level capability.
+DevFlow main is v0.5 foundations-level capability.
 
 Already present:
 
@@ -38,7 +38,7 @@ Do not reimplement these under new names without a migration reason.
 
 ## Recommended release sequence
 
-### v0.5 — Foundations ✅ implemented
+### v0.5 — Foundations ✅
 
 Implemented:
 
@@ -46,13 +46,13 @@ Implemented:
 - finding lifecycle, fingerprinting and reconciliation;
 - config schema plus `validate`;
 - config migration framework;
-- provider/capability abstraction;
-- sync result/conflict/idempotency model;
+- provider/capability abstraction and registry;
+- sync conflict/idempotency/event model;
 - policy/gate engine;
-- service-identity-ready principal model;
-- tests for all above.
+- user/service-account-ready principal model;
+- machine-readable schemas and tests.
 
-The foundation now exists. Do not reimplement it under new names.
+Do not rebuild these under alternate abstractions unless a migration is explicitly designed.
 
 ### v0.6 — Analyzers ← next
 
