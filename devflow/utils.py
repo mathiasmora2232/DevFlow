@@ -16,7 +16,7 @@ SKIP_DIRS = {
 TEXT_SUFFIXES = {
     ".py", ".js", ".jsx", ".ts", ".tsx", ".java", ".go", ".php", ".html",
     ".css", ".scss", ".md", ".yml", ".yaml", ".json", ".toml", ".xml",
-    ".env", ".txt", ".sql", ".sh", ".properties", ".conf",
+    ".env", ".txt", ".sql", ".sh", ".properties", ".conf", ".pem", ".key",
 }
 
 
@@ -67,7 +67,7 @@ def iter_project_files(root: Path, max_file_bytes: int = 1_000_000) -> Iterable[
                     continue
             except OSError:
                 continue
-            if p.suffix.lower() in TEXT_SUFFIXES or name in {
+            if p.suffix.lower() in TEXT_SUFFIXES or name.startswith(".env") or name in {
                 "Dockerfile", "Makefile", "Procfile", "requirements.txt", "go.mod",
                 "package.json", "composer.json", "pom.xml", "gradlew", "mvnw",
             }:

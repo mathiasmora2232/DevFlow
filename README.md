@@ -61,6 +61,9 @@ Un proyecto puede ser sano y no usar tu stack favorito. Eso no debe penalizar su
 |---|---|
 | `/nuevo-proyecto` | Wizard para definir arquitectura, stack y estándares iniciales |
 | `/estado` | Resumen ejecutivo del estado técnico y operativo |
+| `/doctor` | Diagnosticar entorno, herramientas y espacio libre |
+| `/docs` | Auditar calidad/cobertura de documentación |
+| `/secretos` | Detectar posibles secretos con salida redactada |
 | `/planificar` | Convertir una necesidad en plan ejecutable |
 | `/ejecutar` | Implementar trabajo aprobado |
 | `/auditar` | Auditoría integral con score 0–100 |
@@ -141,14 +144,14 @@ Skills + reglas + scorecards + plantillas + configuración.
 CLI para inicialización, auditoría estática y reportes.
 
 ### v0.3
-Adaptadores Codex / Claude Code.
+CLI ampliado con Doctor, auditoría de documentación y escaneo de secretos; adaptadores Codex / Claude Code continúan evolucionando.
 
 ### v0.4
 MCP opcional para GitHub, CI/CD, Cloudflare, Kubernetes, Grafana y otros sistemas vivos.
 
 Ver `docs/MCP_ROADMAP.md`.
 
-## CLI ejecutable (v0.2)
+## CLI ejecutable (v0.3)
 
 Instalación local:
 
@@ -166,6 +169,9 @@ devflow /revisar-stack
 devflow /planificar "Nueva implementación"
 devflow /traza
 devflow /estado
+devflow /doctor
+devflow /docs
+devflow /secretos
 ```
 
 La v0.2 realiza auditoría estática conservadora. Datos de carga real y salud de producción permanecen `N/A` hasta que existan adaptadores runtime/MCP con evidencia.

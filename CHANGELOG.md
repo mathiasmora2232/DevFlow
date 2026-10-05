@@ -4,6 +4,11 @@
 
 ### Added
 
+- DevFlow CLI v0.3.
+- `/doctor`: readiness de entorno, tooling y espacio libre.
+- `/docs`: auditoría de documentación con score y quality gate opcional.
+- `/secretos`: escaneo de secretos con redacción y `--fail-on` para CI.
+
 - DevFlow CLI v0.2 (`devflow`).
 - Spanish slash-style CLI aliases and English aliases.
 - Interactive/non-interactive `/nuevo-proyecto` initialization.
