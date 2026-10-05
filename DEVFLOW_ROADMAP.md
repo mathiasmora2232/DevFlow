@@ -178,13 +178,13 @@ DevFlow debe:
 | Deploy automation | ❌ Pendiente | approval-gated |
 | Domain contracts | ✅ Implementado | modelos canónicos + tests |
 | Finding lifecycle/fingerprints | ✅ Implementado | persistencia + reconciliación + waivers |
-| Config schema/migrations | ✅ Implementado | schema v2 + validate + migrate |
+| Config schema/migrations | ✅ Implementado | schema v3 + ownership/engagement + validate + migrate |
 | Provider capability layer | ✅ Implementado | protocol + registry + normalized results/errors |
 | Sync/conflict/idempotency | ✅ Implementado | authority/conflicts/events/idempotency |
 | Quality gates/profiles | ✅ Implementado | deterministic gate engine |
-| Project discovery/adoption | 📐 Diseñado | v0.5.1 |
-| StellarCode audit/stack/infra sync | 📐 Diseñado | v0.5.1 |
-| Time tracking core + MCP | 📐 Diseñado | v0.5.1 |
+| Project discovery/adoption | 🚧 Core implementado | v0.5.1: snapshot + stack/config/infra + CLI |
+| StellarCode audit/stack/infra sync | 🚧 Bridge implementado | v2 usa Evidence; bundles estructurados esperan MCP v3 |
+| Time tracking core + MCP | 🚧 CLI/contrato listo | Studio tiene time nativo; MCP aún no expone time tools |
 | Deep framework analyzers | 📐 Diseñado | v0.6 |
 | GitHub/CI ingestion | ❌ Pendiente | v0.7 |
 | Cost analysis | ❌ Pendiente | futuro |
@@ -225,7 +225,7 @@ Leyenda:
 
 | Capability | Skill | CLI | StellarCode MCP | Runtime/Provider | Estado |
 |---|---:|---:|---:|---:|---|
-| Nuevo proyecto | ✅ | ✅ | 🚧 | N/A | ✅ |
+| Nuevo proyecto | ✅ | ✅ | ✅ create_project | N/A | ✅ |
 | Estado proyecto | ✅ | ✅ | ✅ | 🚧 | 🚧 |
 | Stack detection | ✅ | ✅ | N/A | local | ✅ |
 | Doctor | ✅ | ✅ | N/A | local | ✅ |
@@ -240,7 +240,7 @@ Leyenda:
 | Quality gates | ✅ | ✅ | N/A | evidence-driven | ✅ |
 | Provider capability contract | ✅ | N/A | N/A | core abstraction | ✅ |
 | Sync/idempotency primitives | ✅ | N/A | N/A | core abstraction | ✅ |
-| Auditoría general | ✅ | ✅ | 🚧 | local | 🚧 |
+| Discovery/adopción | ✅ | ✅ | 🚧 evidence bridge | local | 🚧 |\n| Auditoría general | ✅ | ✅ | 🚧 | local | 🚧 |
 | Project Health | ✅ | ✅ | N/A | local evidence | ✅ |
 | Stack Fit | ✅ | ✅ | N/A | local evidence | ✅ |
 | Evidence Confidence | ✅ | ✅ | N/A | local evidence | ✅ |
@@ -270,7 +270,7 @@ Leyenda:
 | Cloudflare | 📐 | ❌ | ❌ | ❌ | ❌ |
 | Docker live state | 📐 | ❌ | ❌ | ❌ | ❌ |
 | Kubernetes/k3s live state | 📐 | ❌ | ❌ | ❌ | ❌ |
-| Cost analysis | ❌ | ❌ | ❌ | ❌ | ❌ |
+| Time tracking | ✅ | 🚧 MCP-only CLI | ❌ MCP tools | Studio nativo | 🚧 |\n| Cost analysis | ❌ | ❌ | ❌ | ❌ | ❌ |
 | Auto-remediation | ❌ | ❌ | ❌ | ❌ | ❌ |
 
 ---
