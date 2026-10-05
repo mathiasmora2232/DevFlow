@@ -31,6 +31,20 @@ class PrincipalType(str, Enum):
     SERVICE_ACCOUNT = "service_account"
 
 
+class ProjectOwnership(str, Enum):
+    INTERNAL = "internal"
+    EXTERNAL_CLIENT = "external_client"
+
+
+class EngagementType(str, Enum):
+    GREENFIELD = "greenfield"
+    MIGRATION = "migration"
+    REFACTOR = "refactor"
+    MODERNIZATION = "modernization"
+    MAINTENANCE = "maintenance"
+    AUDIT_ONLY = "audit_only"
+
+
 @dataclass(slots=True)
 class Evidence:
     type: str
@@ -99,6 +113,9 @@ class Project:
     status: str = "active"
     repositories: list[str] = field(default_factory=list)
     environments: list[str] = field(default_factory=list)
+    ownership: str = "internal"
+    engagement: str = "greenfield"
+    client_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -214,6 +231,39 @@ class Environment:
     kind: str
     criticality: str = "medium"
     provider_refs: dict[str, str] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class StackComponent:
+    category: str
+    technology: str
+    version: str | None = None
+    source: str = "repository"
+    evidence: list[str] = field(default_factory=list)
+    confidence: int = 0
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class TimeEntry:
+    id: str
+    project_id: str
+    principal_id: str
+    started_at: str
+    ended_at: str
+    duration_seconds: int
+    work_item_id: str | None = None
+    category: str = "development"
+    description: str = ""
+    billable: bool = True
+    source: str = "devflow"
+    corrected_from: str | None = None
+    evidence: list[dict[str, Any]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
