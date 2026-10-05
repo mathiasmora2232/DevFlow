@@ -182,3 +182,16 @@ Regressed          1
 Accepted risk      3
 False positive     1
 ```
+
+
+## v0.5 implementation
+
+The static audit now emits canonical findings, persists history in `ops/findings.json`, reconciles fingerprints between audits and tracks new/persistent/fixed/regressed states.
+
+CLI lifecycle management:
+
+```bash
+devflow findings list
+devflow findings status --id FND-... --status acknowledged
+devflow findings status --id FND-... --status accepted_risk --reason "..." --approved-by "..." --expires-at 2026-12-01
+```
