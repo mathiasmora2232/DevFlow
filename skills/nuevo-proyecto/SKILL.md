@@ -1,61 +1,148 @@
 ---
 name: nuevo-proyecto
-description: Inicializa un proyecto nuevo o adopta DevFlow en uno existente mediante detección de stack, wizard y configuración persistida.
+description: Inicializa o adopta un proyecto mediante descubrimiento, clasificación y sincronización obligatoria con StellarCode Studio.
 ---
 
 # /nuevo-proyecto
 
 ## Objetivo
 
-Crear `.devflow.yml` y la estructura `ops/` sin adivinar arquitectura ni sobrescribir estado existente.
+Registrar correctamente un proyecto en DevFlow + StellarCode Studio y elegir la ruta de descubrimiento según el tipo de trabajo.
 
-## Ejecución preferida
+StellarCode es el hub operacional del proyecto. El archivo local `.devflow.yml` es configuración local, no el registro maestro.
 
-```bash
-devflow /nuevo-proyecto --target .
+## Clasificación inicial obligatoria
+
+### Ownership
+
+```text
+internal
+external_client
 ```
 
-Para automatización no interactiva:
+Si es `external_client`, resolver/vincular el cliente en StellarCode.
 
-```bash
-devflow /nuevo-proyecto --target . --non-interactive \
-  --name "Proyecto" --stage mvp --backend fastapi \
-  --frontend nextjs --database postgresql
+### Engagement type
+
+```text
+greenfield
+migration
+refactor
+modernization
+maintenance
+audit_only
 ```
 
-## Flujo operativo
+No usar un flujo único para todos.
 
-1. Ejecutar primero detección del repositorio.
-2. Si el repo existe, usar los valores detectados como defaults, no como verdades absolutas.
-3. Preguntar únicamente datos no inferibles: etapa, criticidad, tráfico, presupuesto y decisiones de stack.
-4. Evaluar proporcionalidad: advertir sobre microservicios/Kubernetes/k3s prematuros en prototipos/MVP lean.
-5. Crear `.devflow.yml`.
-6. Crear `ops/TRACE.md`, `BACKLOG.md`, `RISKS.md`, `SECURITY.md`, `RELEASES.md` y `CHANGELOG.md` solo si faltan.
-7. Sincronizar la traza con Git.
-8. No sobrescribir `.devflow.yml` salvo solicitud explícita `--force`.
+## Resolución del nombre
 
-## Estándares disponibles
+Prioridad:
 
-Backend: FastAPI, Go, Node.js, Java/Quarkus, PHP, otro/ninguno.
+1. nombre explícito del usuario;
+2. binding StellarCode existente;
+3. metadata del repo;
+4. nombre del repo/carpeta;
+5. pedir corrección solo si sigue ambiguo.
 
-Frontend: Angular, Next.js, React, JavaScript/TypeScript, Tailwind como styling.
+La inferencia se presenta como propuesta, no como verdad.
 
-Datos: PostgreSQL, MariaDB, SQLite.
+## Ruta greenfield
 
-Infra: Ubuntu Server, Docker, Cloudflare, Kubernetes, k3s, GitHub Actions.
+```text
+identidad
+→ ownership/client
+→ engagement=greenfield
+→ objetivos
+→ alcance
+→ restricciones
+→ propuesta de stack
+→ aprobación
+→ proyecto StellarCode
+→ fases
+→ backlog inicial
+→ config/repo
+```
 
-Observabilidad/performance: Grafana, Prometheus, Netdata, Sentry, k6.
+En un proyecto realmente nuevo primero se diseña el stack y la arquitectura proporcional al alcance.
 
-## Salida esperada
+## Ruta existing system
 
-- Configuración reproducible.
-- Stack detectado + stack elegido.
-- Advertencias de sobrearquitectura cuando haya evidencia.
-- Traza inicial.
+Para migration/refactor/modernization/maintenance:
+
+```text
+identidad
+→ ownership/client
+→ engagement
+→ detectar repo real
+→ barrido de descubrimiento
+→ stack real
+→ arquitectura actual
+→ security/secrets/config
+→ dependencies/tests/db
+→ infra/CI/docs/observability
+→ scores/findings
+→ snapshot StellarCode
+→ objetivos/target state
+→ fases
+→ backlog propuesto
+```
+
+No preguntar manualmente datos que el repositorio/providers puedan demostrar.
+
+## Initial discovery bundle
+
+Ejecutar o preparar:
+
+- doctor;
+- stack detection;
+- audit general;
+- security;
+- secret hygiene;
+- config/env metadata;
+- dependencies;
+- architecture;
+- code quality;
+- testing;
+- database;
+- DevOps/CI;
+- documentation;
+- observability/resilience;
+- SEO/accessibility cuando aplique;
+- performance estática;
+- runtime evidence si hay providers.
+
+## Sync obligatorio
+
+Sincronizar a StellarCode mediante MCP:
+
+- Project;
+- Client/internal ownership;
+- engagement type;
+- repositories;
+- detected stack;
+- architecture summary;
+- environments;
+- config variable metadata;
+- infrastructure inventory;
+- audit runs;
+- scores;
+- findings;
+- risks;
+- decisions;
+- phases;
+- objectives;
+- backlog proposals;
+- evidence;
+- time-tracking policy.
+
+Si MCP no está disponible, marcar `sync_status=pending`; no declarar onboarding completo.
 
 ## Reglas
 
 - Evidencia > suposición.
-- `[Inferencia]` para conclusiones no confirmadas.
-- No recomendar Kubernetes por defecto.
-- No almacenar secretos.
+- Existing system: current state antes de target state.
+- Greenfield: definir objetivos/constraints antes del stack.
+- No guardar secretos.
+- No crear backlog masivo sin aprobación.
+- No considerar un proyecto gestionado si nunca fue vinculado al Hub.
