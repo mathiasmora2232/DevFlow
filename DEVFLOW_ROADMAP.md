@@ -141,6 +141,11 @@ DevFlow debe:
 18. Project y Repository no son sinónimos; un proyecto puede abarcar múltiples repos.
 19. Integraciones escribibles deben ser idempotentes y registrar request/event identity.
 20. Config, findings, sync results y provider outputs deben evolucionar con schema/version explícita.
+21. StellarCode Studio es el hub operacional obligatorio para proyectos gestionados.
+22. Todo auditor debe poder publicar resultados estructurados al MCP; Markdown no es la única salida.
+23. Onboarding distingue ownership (internal/external_client) y engagement (greenfield/migration/refactor/modernization/maintenance/audit_only).
+24. Existing systems establecen current state antes de proponer target state.
+25. Time tracking es obligatorio para trabajo gestionado y su fuente operacional es StellarCode MCP.
 
 ---
 
@@ -177,6 +182,9 @@ DevFlow debe:
 | Provider capability layer | ✅ Implementado | protocol + registry + normalized results/errors |
 | Sync/conflict/idempotency | ✅ Implementado | authority/conflicts/events/idempotency |
 | Quality gates/profiles | ✅ Implementado | deterministic gate engine |
+| Project discovery/adoption | 📐 Diseñado | v0.5.1 |
+| StellarCode audit/stack/infra sync | 📐 Diseñado | v0.5.1 |
+| Time tracking core + MCP | 📐 Diseñado | v0.5.1 |
 | Deep framework analyzers | 📐 Diseñado | v0.6 |
 | GitHub/CI ingestion | ❌ Pendiente | v0.7 |
 | Cost analysis | ❌ Pendiente | futuro |
@@ -548,6 +556,52 @@ Documentos canónicos:
 - writes repetidos pueden deduplicarse por idempotency key;
 - gates producen `pass/warn/blocked/unknown`;
 - tests cubren casos felices, conflictos y regresiones.
+
+## v0.5.1 — Project Discovery + StellarCode Hub + Time Tracking
+
+Objetivo: convertir StellarCode Studio en el centro operacional real de todos los proyectos antes de escalar analyzers.
+
+Entregar:
+
+- ownership: internal / external_client;
+- client binding;
+- engagement type: greenfield / migration / refactor / modernization / maintenance / audit_only;
+- name inference/correction;
+- greenfield onboarding flow;
+- existing-system discovery flow;
+- versioned DiscoverySnapshot;
+- structured stack inventory sync;
+- config/environment metadata sync sin secretos;
+- infrastructure inventory sync;
+- normalized AuditRun publication;
+- findings/scores/evidence sync;
+- phases/objectives sync;
+- backlog proposal sync;
+- offline pending-sync queue;
+- TimeSession / TimeEntry contracts;
+- mandatory project/principal linkage for time;
+- start/stop/manual/correct operations;
+- billable/non-billable support;
+- no silent time deletion;
+- MCP time capabilities and audit history.
+
+Documentos canónicos:
+
+- `docs/PROJECT_DISCOVERY.md`;
+- `docs/STELLARCODE_HUB_CONTRACT.md`;
+- `docs/DOMAIN_MODEL.md`.
+
+### Definition of Done v0.5.1
+
+- `/nuevo-proyecto` selects the correct discovery path;
+- existing repo onboarding performs an initial sweep before target-state planning;
+- greenfield onboarding defines scope/objectives/stack before implementation;
+- all major auditors can produce a structured sync payload;
+- stack/config/infra/audit/findings/scores are represented in StellarCode;
+- MCP unavailable => pending sync, not false success;
+- time tracking is linked to project/principal/work item where applicable;
+- corrections preserve history;
+- end-to-end onboarding test covers internal greenfield and external existing-system cases.
 
 ## v0.6 — Framework analyzers
 
@@ -951,7 +1005,7 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 
 # 16. Próximas prioridades
 
-## P0 — Completar rollout StellarCode v2
+## P0 — StellarCode v2 rollout
 
 - migration real;
 - deploy controlado;
@@ -959,7 +1013,23 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - writes;
 - retiro gradual del shared secret legacy.
 
-## P1 — v0.6 Analyzers ← siguiente
+## P1 — v0.5.1 Project Discovery + Hub + Time Tracking ← siguiente
+
+- ownership/client model;
+- engagement classification;
+- greenfield vs existing-system onboarding;
+- discovery snapshot;
+- structured stack sync;
+- config/env metadata sync;
+- infra inventory sync;
+- AuditRun/findings/scores/evidence sync;
+- phases/objectives/backlog proposal sync;
+- pending-sync queue;
+- TimeSession/TimeEntry;
+- MCP time capabilities;
+- end-to-end onboarding tests.
+
+## P2 — v0.6 Analyzers
 
 - FastAPI/Python;
 - Node/Next/React;
@@ -969,9 +1039,9 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - GitHub Actions;
 - analyzer registry;
 - canonical Finding output;
-- luego Go/Quarkus/PHP y resto del catálogo.
+- all analyzer outputs publishable to StellarCode.
 
-## P2 — v0.7 GitHub / CI / PR
+## P3 — v0.7 GitHub / CI / PR
 
 - GitHub provider;
 - PR read/create/review;
@@ -979,25 +1049,16 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - evidence ingestion;
 - task linking;
 - event deduplication;
-- StellarCode sync;
-- release metadata.
+- StellarCode sync.
 
-## P3 — v0.8 Release / Deploy / Rollback
+## P4 — v0.8/v0.9 Operations
 
-- release provider flow;
-- staging preflight;
-- deploy;
-- rollback;
-- migration awareness;
-- post-deploy verification/evidence.
-
-## P4 — v0.9 Runtime / Observability / OAuth
-
+- release/deploy/rollback;
+- runtime/observability;
 - k6;
 - Grafana/Prometheus;
 - Sentry;
-- Docker;
-- k3s/Kubernetes;
+- Docker/k3s/Kubernetes;
 - Cloudflare;
 - OAuth interactive;
 - scoped automation identities.
@@ -1015,6 +1076,8 @@ Documentos especializados:
 - `ops/BACKLOG.md` — trabajo operativo inmediato.
 - `docs/MCP_ROADMAP.md` — detalle específico del ecosistema MCP.
 - `docs/DOMAIN_MODEL.md` — entidades y ownership canónico.
+- `docs/PROJECT_DISCOVERY.md` — onboarding greenfield/existing-system y barrido inicial.
+- `docs/STELLARCODE_HUB_CONTRACT.md` — contrato de sincronización operacional obligatoria con StellarCode.
 - `docs/FINDING_LIFECYCLE.md` — identidad, fingerprint y estados de findings.
 - `docs/PROVIDER_CONTRACT.md` — interfaz/capabilities de providers.
 - `docs/SYNC_MODEL.md` — autoridad, conflictos e idempotencia.
