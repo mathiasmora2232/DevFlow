@@ -16,10 +16,11 @@
 - `/doctor`: environment/tooling/disk readiness.
 - `/docs`: documentation coverage score/report.
 - `/secretos`: redacted secret scanning + CI threshold.
-- 10 automated tests.
+- 13 automated tests.
 - StellarCode MCP client and project binding.
 - `/stellar-status`: authenticated identity, project role and permissions.
 - `/kanban`: shared task board read/move operations.
+- Project discovery, role listing, member/role management and project decisions via StellarCode MCP.
 - `/planificar --stellar`: remote-first backlog creation.
 - `/traza --stellar`: local Git + remote Kanban snapshot.
 - `/siguiente`: next actionable task from the shared backlog.
