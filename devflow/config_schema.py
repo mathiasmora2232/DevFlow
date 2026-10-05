@@ -15,6 +15,11 @@ ALLOWED_PROFILES = {
     "legacy-modernization", "external-audit", "high-security", "high-traffic",
 }
 
+ALLOWED_TOP_LEVEL = {
+    "version", "schema_version", "profile", "project", "providers", "gates",
+    "preferences", "stack", "commands", "audit", "approvals", "stellarcode", "trace",
+}
+
 
 def config_schema_version(data: dict[str, Any]) -> int:
     if "schema_version" in data:
@@ -28,6 +33,10 @@ def validate_config(data: dict[str, Any]) -> list[dict[str, str]]:
     errors: list[dict[str, str]] = []
     if not isinstance(data, dict):
         return [{"path": "$", "message": "config must be a mapping"}]
+
+    for key in data:
+        if key not in ALLOWED_TOP_LEVEL:
+            errors.append({"path": key, "message": "unknown top-level key"})
 
     version = config_schema_version(data)
     if version not in {1, CURRENT_SCHEMA_VERSION}:
