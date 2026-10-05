@@ -173,3 +173,17 @@ Do not hide provider failures behind a generic error.
 10. custom SSH.
 
 StellarCode already exists as an operational MCP integration. Future refactoring may place it behind this capability model without breaking its current public behavior.
+
+
+## v0.5 implementation
+
+Implemented in `devflow.providers`:
+
+- Provider protocol;
+- capability checks;
+- capability classes;
+- normalized provider error codes;
+- ProviderResult contract;
+- ProviderRegistry.
+
+No live GitHub/Cloudflare/Kubernetes provider is claimed yet; those are later releases.
