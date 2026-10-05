@@ -43,3 +43,13 @@ def test_event_payload_hash_is_deterministic():
         payload={"a": 1, "b": 2},
     )
     assert one.payload_hash == two.payload_hash
+
+
+def test_idempotency_store_is_versioned(tmp_path: Path):
+    import json
+    store = IdempotencyStore(tmp_path)
+    store.register("evt-1")
+    payload = json.loads((tmp_path / "ops" / "idempotency.json").read_text(encoding="utf-8"))
+    assert payload["schema"] == "devflow.idempotency"
+    assert payload["schema_version"] == 1
+    assert "evt-1" in payload["entries"]
