@@ -24,7 +24,10 @@ def test_migrate_v1_to_v3():
     assert "version" not in migrated
     assert migrated["profile"] == "mvp"
     assert migrated["providers"] == {}
-    assert migrated["gates"] == {}\n    assert migrated["project"]["ownership"] == "internal"\n    assert migrated["project"]["engagement"] == "greenfield"\n
+    assert migrated["gates"] == {}
+    assert migrated["project"]["ownership"] == "internal"
+    assert migrated["project"]["engagement"] == "greenfield"
+
 
 def test_validation_rejects_raw_stellar_token():
     cfg = migrate_config(legacy_config())
