@@ -1,4 +1,4 @@
-schema_version: 2
+schema_version: 3
 profile: prototype
 providers: {}
 gates: {}
@@ -10,7 +10,7 @@ project:
   type: "monorepo"
   criticality: "medium"
   expected_traffic: "n/a"
-  budget_profile: "lean"
+  budget_profile: "lean"\n  ownership: "internal"\n  engagement: "greenfield"\n  client_id:
 
 preferences:
   philosophy: "simple-first"
