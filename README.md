@@ -176,7 +176,11 @@ devflow /docs
 devflow /secretos
 devflow stellar-bind --project-id 10
 devflow /stellar-status
+devflow /proyectos
+devflow /roles
+devflow /miembros
 devflow /kanban
+devflow /decision
 devflow /planificar "Nueva implementación" --stellar
 devflow /traza --stellar
 devflow /siguiente
