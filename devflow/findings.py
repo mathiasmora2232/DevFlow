@@ -15,7 +15,6 @@ ACTIVE_STATUSES = {
     FindingStatus.ACKNOWLEDGED.value,
     FindingStatus.PLANNED.value,
     FindingStatus.IN_PROGRESS.value,
-    FindingStatus.FIXED.value,
     FindingStatus.ACCEPTED_RISK.value,
     FindingStatus.SUPPRESSED.value,
 }
@@ -156,7 +155,7 @@ def reconcile_findings(
         item = {**old, **new}
         item["first_seen_at"] = old.get("first_seen_at") or new.get("first_seen_at")
         previous_status = old.get("status", FindingStatus.OPEN.value)
-        if previous_status in {FindingStatus.CLOSED.value, FindingStatus.VERIFIED.value}:
+        if previous_status in {FindingStatus.FIXED.value, FindingStatus.CLOSED.value, FindingStatus.VERIFIED.value}:
             item["status"] = FindingStatus.OPEN.value
             item["resolved_at"] = None
             item["regressed"] = True
