@@ -61,6 +61,10 @@ class SyncResult:
         return asdict(self)
 
 
+def authority_for(domain: str) -> str:
+    return AUTHORITY.get(domain, "manual")
+
+
 def detect_conflict(field: str, local_value: Any, remote_value: Any, authority: str) -> SyncConflict | None:
     if local_value == remote_value:
         return None
@@ -77,6 +81,8 @@ class IdempotencyStore:
             return {}
         try:
             data = json.loads(self.path.read_text(encoding="utf-8"))
+            if isinstance(data, dict) and isinstance(data.get("entries"), dict):
+                return data["entries"]
             return data if isinstance(data, dict) else {}
         except (json.JSONDecodeError, OSError):
             return {}
@@ -90,7 +96,13 @@ class IdempotencyStore:
             return False
         data[key] = {"registered_at": now_iso(), "metadata": metadata or {}}
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self.path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        payload = {
+            "schema": "devflow.idempotency",
+            "schema_version": 1,
+            "devflow_version": __version__,
+            "entries": data,
+        }
+        self.path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
         return True
 
 
