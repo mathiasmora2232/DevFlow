@@ -17,6 +17,9 @@ Los slash commands son la interfaz humana/canónica. El CLI v0.3 acepta directam
 | `/doctor` | `doctor` | `doctor` |
 | `/docs` | `docs` | `docs` |
 | `/secretos` | `secrets` | `secretos` |
+| `/stellar-status` | `stellar-status` | `stellarcode-sync` |
+| `/kanban` | `kanban` | `stellarcode-sync` |
+| `/siguiente` | `next` | `siguiente-accion` |
 
 ## Skills disponibles; automatización CLI/provider pendiente
 
