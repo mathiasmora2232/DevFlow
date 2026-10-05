@@ -227,6 +227,11 @@ Leyenda:
 | Backlog / Kanban | ✅ | ✅ | ✅ | StellarCode | ✅ |
 | Siguiente acción | ✅ | ✅ | ✅ | StellarCode | ✅ |
 | Trace | ✅ | ✅ | ✅ | Git + StellarCode | ✅ |
+| Finding lifecycle | ✅ | ✅ | N/A | DevFlow local | ✅ |
+| Config validation/migration | ✅ | ✅ | N/A | local | ✅ |
+| Quality gates | ✅ | ✅ | N/A | evidence-driven | ✅ |
+| Provider capability contract | ✅ | N/A | N/A | core abstraction | ✅ |
+| Sync/idempotency primitives | ✅ | N/A | N/A | core abstraction | ✅ |
 | Auditoría general | ✅ | ✅ | 🚧 | local | 🚧 |
 | Project Health | ✅ | ✅ | N/A | local evidence | ✅ |
 | Stack Fit | ✅ | ✅ | N/A | local evidence | ✅ |
@@ -502,9 +507,9 @@ Pendiente para completar rollout:
 - activar writes de forma controlada;
 - retirar shared secret legacy.
 
-## v0.5 — Foundations ✅
+## v0.5 — Foundations ✅ ✅
 
-Objetivo: estabilizar los contratos internos antes de multiplicar analyzers/providers.
+Objetivo cumplido: estabilizar los contratos internos antes de multiplicar analyzers/providers.
 
 Entregado:
 
@@ -975,7 +980,7 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - GitHub Actions;
 - luego Go/Quarkus/PHP y resto del catálogo.
 
-## P3 — v0.7 GitHub / CI
+## P3 — v0.8 Release / Deploy
 
 - PRs;
 - checks;
@@ -984,7 +989,7 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - task linking;
 - event deduplication.
 
-## P4 — v0.8/v0.9 Runtime + Deploy
+## P4 — v0.9 Runtime / Observability / OAuth
 
 - release/deploy/rollback;
 - k6;
