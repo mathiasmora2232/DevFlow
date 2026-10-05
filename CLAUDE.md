@@ -58,20 +58,20 @@ Conversation memory is never a source of truth.
 
 ## Current recommended next version
 
-The next architectural milestone is **v0.5 Foundations**, not a large analyzer expansion.
+**v0.5 Foundations is implemented. The next milestone is v0.6 Analyzers.**
 
-Build, in order where practical:
+Build v0.6 on top of the v0.5 contracts:
 
-1. typed/canonical domain contracts;
-2. Finding model + stable fingerprint + reconciliation;
-3. config schema/validate/migrations;
-4. provider capability interface;
-5. sync/conflict/idempotency primitives;
-6. quality-gate engine + profiles;
-7. principal model ready for users and automation identities;
-8. tests and schema/version metadata.
+1. analyzer registry/plugin architecture;
+2. FastAPI/Python analyzer;
+3. Node/Next/React analyzer;
+4. Angular analyzer;
+5. PostgreSQL analyzer;
+6. Docker analyzer;
+7. GitHub Actions analyzer;
+8. then Go/Quarkus/PHP and the remaining catalog.
 
-Only after the foundation is stable should v0.6 scale stack-specific analyzers.
+Every analyzer must emit canonical Findings with stable fingerprints, evidence and confidence.
 
 ## Production
 
