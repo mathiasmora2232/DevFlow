@@ -10,7 +10,10 @@ project:
   type: "fullstack"     # frontend | backend | fullstack | api | mobile | infra | monorepo
   criticality: "medium" # low | medium | high | critical
   expected_traffic: "unknown"
-  budget_profile: "lean"\n  ownership: "internal"\n  engagement: "greenfield"\n  client_id:
+  budget_profile: "lean"
+  ownership: "internal"
+  engagement: "greenfield"
+  client_id:
 
 preferences:
   philosophy: "simple-first"
