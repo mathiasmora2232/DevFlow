@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "devflow-core"
-version = "0.3.0"
+version = "0.4.0"
 description = "Engineering workflow skills, project auditing and traceability CLI"
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = ["PyYAML>=6.0"]
+dependencies = ["PyYAML>=6.0", "mcp>=1.13,<2"]
 
 [project.scripts]
 devflow = "devflow.cli:main"
