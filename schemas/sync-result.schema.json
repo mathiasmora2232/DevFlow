@@ -5,6 +5,7 @@
   "required": [
     "schema",
     "schema_version",
+    "devflow_version",
     "status",
     "changes",
     "conflicts",
@@ -39,6 +40,9 @@
       "type": "object"
     },
     "timestamp": {
+      "type": "string"
+    },
+    "devflow_version": {
       "type": "string"
     }
   }
