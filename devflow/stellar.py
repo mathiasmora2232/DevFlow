@@ -185,8 +185,8 @@ async def _list_tools_async(url: str, token: str, client_name: str) -> list[str]
     return sorted(tool.name for tool in getattr(result, "tools", []) or [])
 
 
-def list_tools(root: Path, require_project: bool = False) -> list[str]:
-    stellar = stellar_config(root, require_project=require_project)
+def list_tools(root: Path, require_project: bool = False, allow_disabled: bool = False) -> list[str]:
+    stellar = stellar_config(root, require_project=require_project, allow_disabled=allow_disabled)
     token = stellar_token(stellar)
     return asyncio.run(_list_tools_async(
         stellar["mcp_url"],
