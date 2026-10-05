@@ -43,3 +43,30 @@
 - Production deploy automation.
 
 Those capabilities require adapters/live evidence and remain approval-gated where consequential.
+
+
+## Next architectural milestone
+
+### v0.5 Foundations
+
+Documented contracts ready for implementation:
+
+- `docs/DOMAIN_MODEL.md`
+- `docs/FINDING_LIFECYCLE.md`
+- `docs/PROVIDER_CONTRACT.md`
+- `docs/SYNC_MODEL.md`
+- `docs/CONFIG_AND_VERSIONING.md`
+- `docs/QUALITY_GATES.md`
+- `docs/CLAUDE_HANDOFF.md`
+
+v0.5 should implement these foundations before expanding framework analyzers at scale.
+
+Key targets:
+
+- canonical domain models;
+- finding fingerprint/lifecycle/reconciliation;
+- config validation and migrations;
+- provider capability abstraction;
+- sync conflicts and idempotency;
+- quality gates/profiles;
+- versioned machine-readable contracts.
