@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "devflow-core"
+version = "0.2.0"
+description = "Engineering workflow skills, project auditing and traceability CLI"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = ["PyYAML>=6.0"]
+
+[project.scripts]
+devflow = "devflow.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["devflow*"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
