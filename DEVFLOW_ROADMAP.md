@@ -959,18 +959,7 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - writes;
 - retiro gradual del shared secret legacy.
 
-## P1 — v0.5 Foundations ✅
-
-- domain contracts;
-- Finding lifecycle;
-- fingerprint/reconciliation;
-- config schema + validate + migrate;
-- provider capability interface;
-- sync conflicts + idempotency;
-- quality gates + profiles;
-- service identity model.
-
-## P2 — v0.6 Analyzers ← siguiente
+## P1 — v0.6 Analyzers ← siguiente
 
 - FastAPI/Python;
 - Node/Next/React;
@@ -978,27 +967,40 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - PostgreSQL;
 - Docker;
 - GitHub Actions;
+- analyzer registry;
+- canonical Finding output;
 - luego Go/Quarkus/PHP y resto del catálogo.
 
-## P3 — v0.8 Release / Deploy
+## P2 — v0.7 GitHub / CI / PR
 
-- PRs;
-- checks;
-- releases metadata;
+- GitHub provider;
+- PR read/create/review;
+- checks/CI ingestion;
 - evidence ingestion;
 - task linking;
-- event deduplication.
+- event deduplication;
+- StellarCode sync;
+- release metadata.
+
+## P3 — v0.8 Release / Deploy / Rollback
+
+- release provider flow;
+- staging preflight;
+- deploy;
+- rollback;
+- migration awareness;
+- post-deploy verification/evidence.
 
 ## P4 — v0.9 Runtime / Observability / OAuth
 
-- release/deploy/rollback;
 - k6;
 - Grafana/Prometheus;
 - Sentry;
 - Docker;
 - k3s/Kubernetes;
 - Cloudflare;
-- OAuth interactive.
+- OAuth interactive;
+- scoped automation identities.
 
 ---
 
