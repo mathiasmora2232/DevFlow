@@ -9,6 +9,10 @@
 
 ## Next
 
+- GitHub/CI evidence sync into StellarCode.
+- MCP project decision command from DevFlow.
+- Members/roles management commands from DevFlow (server RBAC already implemented).
+
 - Language-specific dead-code adapters.
 - Duplication analyzers.
 - Lighthouse/SEO adapter.
@@ -18,7 +22,7 @@
 
 ## Later
 
-- MCP server.
+- OAuth 2.1 interactive authorization server flow for StellarCode MCP.
 - Cloudflare integration.
 - Kubernetes/k3s integration.
 - Grafana/Prometheus integration.
