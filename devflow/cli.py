@@ -11,6 +11,9 @@ import yaml
 from . import __version__
 from .audit import audit_project
 from .config import build_config, load_config, save_config
+from .config_schema import config_summary, migrate_config_file, validate_config
+from .findings import load_findings, normalize_legacy_finding, reconcile_findings, save_findings, update_finding_status
+from .gates import evaluate_gate
 from .detector import detect_stack
 from .doctor import doctor_project, doctor_markdown
 from .docs_audit import audit_docs, docs_markdown
@@ -41,6 +44,9 @@ ALIASES = {
     "/decision": "decision", "decision": "decision",
     "/kanban": "kanban",
     "/siguiente": "siguiente", "next": "siguiente",
+    "/validar": "validate", "validate": "validate",
+    "/findings": "findings", "findings": "findings",
+    "/gate": "gate", "gate": "gate",
 }
 
 
@@ -116,6 +122,15 @@ def cmd_detect(args) -> int:
 def cmd_audit(args) -> int:
     root = _target(args.target); cfg = _require_config(root)
     result = audit_project(root, cfg)
+
+    project_slug = cfg.get("project", {}).get("slug") or root.name
+    raw_findings = result.get("findings", [])
+    current = [normalize_legacy_finding(item, project_slug) for item in raw_findings]
+    merged, finding_stats = reconcile_findings(load_findings(root), current)
+    save_findings(root, merged)
+    result["findings"] = merged
+    result["finding_reconciliation"] = finding_stats
+
     reports = root / "ops" / "reports"; reports.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
     json_path = reports / f"audit-{stamp}.json"
@@ -128,6 +143,7 @@ def cmd_audit(args) -> int:
     print(f"Health: {result['project_health_score']}/100")
     print(f"Stack Fit: {result['stack_fit_score']}/100")
     print(f"Evidence Confidence: {result['evidence_confidence']}/100")
+    print(f"Findings: new={finding_stats['new']} persistent={finding_stats['persistent']} fixed={finding_stats['fixed']} regressed={finding_stats['regressed']}")
     print(f"Report: {md_path}")
     return 0
 
@@ -464,6 +480,84 @@ def cmd_next(args) -> int:
     return 0
 
 
+def cmd_validate(args) -> int:
+    root = _target(args.target)
+    cfg = _require_config(root)
+    errors = validate_config(cfg)
+    if errors:
+        for error in errors:
+            print(f"ERROR {error['path']}: {error['message']}")
+        return 6
+    print(f"Config valid (schema={config_summary(cfg)['schema_version']})")
+    return 0
+
+
+def cmd_config(args) -> int:
+    root = _target(args.target)
+    if args.action == "show":
+        cfg = _require_config(root)
+        print(yaml.safe_dump(config_summary(cfg), sort_keys=False, allow_unicode=True))
+        return 0
+    if args.action == "migrate":
+        try:
+            result = migrate_config_file(root, check=args.check)
+        except (FileNotFoundError, ValueError) as exc:
+            print(f"ERROR: {exc}")
+            return 6
+        mode = "would migrate" if args.check and result["changed"] else "migrated" if result["changed"] else "already current"
+        print(f"Config {mode}: schema {result['from']} -> {result['to']}")
+        if not args.check:
+            errors = validate_config(result["config"])
+            if errors:
+                for error in errors:
+                    print(f"ERROR {error['path']}: {error['message']}")
+                return 6
+        return 0
+    return 2
+
+
+def cmd_findings(args) -> int:
+    root = _target(args.target)
+    findings = load_findings(root)
+    if args.action == "list":
+        selected = findings
+        if args.status:
+            selected = [f for f in selected if f.get("status") == args.status]
+        if args.severity:
+            selected = [f for f in selected if f.get("severity") == args.severity]
+        for finding in selected:
+            print(f"{finding.get('id')} | {finding.get('severity')} | {finding.get('status')} | {finding.get('category')} | {finding.get('title')}")
+        print(f"Total: {len(selected)}")
+        return 0
+
+    if not args.id or not args.status:
+        print("ERROR: findings status requires --id and --status")
+        return 2
+    updated = update_finding_status(root, args.id, args.status, args.reason, args.approved_by, args.expires_at)
+    if not updated:
+        print(f"ERROR: finding not found: {args.id}")
+        return 7
+    print(f"{updated['id']} -> {updated['status']}")
+    return 0
+
+
+def cmd_gate(args) -> int:
+    root = _target(args.target)
+    cfg = _require_config(root)
+    latest = root / "ops" / "reports" / "latest.json"
+    audit = json.loads(latest.read_text(encoding="utf-8")) if latest.exists() else None
+    evidence = {
+        "tests": args.tests,
+        "build": args.build,
+        "rollback": args.rollback,
+        "healthcheck": args.healthcheck,
+        "verified_ci": args.verified_ci,
+    }
+    result = evaluate_gate(args.gate, cfg, audit, evidence)
+    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    return 0 if result.result in {"pass", "warn"} else 8
+
+
 def cmd_status(args) -> int:
     root = _target(args.target); cfg = _require_config(root)
     detected = detect_stack(root)
@@ -510,6 +604,10 @@ def build_parser() -> argparse.ArgumentParser:
     dc = sub.add_parser("decision", help="Lista o registra decisiones ADR-style en StellarCode"); dc.add_argument("action", nargs="?", choices=["list","add"], default="list"); dc.add_argument("--target", default="."); dc.add_argument("--title"); dc.add_argument("--decision", dest="decision_text"); dc.add_argument("--context"); dc.add_argument("--consequences"); dc.add_argument("--status", choices=["proposed","accepted","superseded","rejected"], default="accepted"); dc.set_defaults(func=cmd_decision)
     kb = sub.add_parser("kanban", help="Consulta o mueve tareas del Kanban StellarCode"); kb.add_argument("action", nargs="?", choices=["list","move"], default="list"); kb.add_argument("--target", default="."); kb.add_argument("--task-id", type=int); kb.add_argument("--status", choices=["pending","in_progress","review","completed","blocked"]); kb.set_defaults(func=cmd_kanban)
     nx = sub.add_parser("siguiente", help="Recomienda la siguiente tarea del Kanban StellarCode"); nx.add_argument("--target", default="."); nx.set_defaults(func=cmd_next)
+    vd = sub.add_parser("validate", help="Valida .devflow.yml contra el contrato actual"); vd.add_argument("--target", default="."); vd.set_defaults(func=cmd_validate)
+    cf = sub.add_parser("config", help="Muestra o migra configuración DevFlow"); cf.add_argument("action", choices=["show","migrate"]); cf.add_argument("--target", default="."); cf.add_argument("--check", action="store_true"); cf.set_defaults(func=cmd_config)
+    fd = sub.add_parser("findings", help="Consulta o actualiza lifecycle de findings"); fd.add_argument("action", nargs="?", choices=["list","status"], default="list"); fd.add_argument("--target", default="."); fd.add_argument("--id"); fd.add_argument("--status", choices=["open","acknowledged","planned","in_progress","fixed","verified","closed","accepted_risk","false_positive","suppressed"]); fd.add_argument("--severity", choices=["critical","high","medium","low","info"]); fd.add_argument("--reason"); fd.add_argument("--approved-by"); fd.add_argument("--expires-at"); fd.set_defaults(func=cmd_findings)
+    gt = sub.add_parser("gate", help="Evalúa quality gate determinista"); gt.add_argument("gate", choices=["pull_request","staging","production","release"]); gt.add_argument("--target", default="."); gt.add_argument("--tests", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--build", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--rollback", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--healthcheck", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--verified-ci", dest="verified_ci", action=argparse.BooleanOptionalAction, default=None); gt.set_defaults(func=cmd_gate)
     st = sub.add_parser("estado", help="Resumen de estado"); st.add_argument("--target", default="."); st.set_defaults(func=cmd_status)
     return p
 
