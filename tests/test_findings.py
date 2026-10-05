@@ -62,3 +62,19 @@ def test_update_finding_status_persists_waiver(tmp_path: Path):
     updated = update_finding_status(tmp_path, finding["id"], "accepted_risk", "temporary", "Mathias", "2026-12-01")
     assert updated["waiver"]["reason"] == "temporary"
     assert updated["status"] == "accepted_risk"
+
+
+def test_reconcile_reopens_fixed_finding_as_regression():
+    finding = normalize_legacy_finding(
+        {"category": "security", "severity": "high", "message": "Bad thing", "evidence": "app.py"},
+        "demo",
+    )
+    finding["status"] = "fixed"
+    current = normalize_legacy_finding(
+        {"category": "security", "severity": "high", "message": "Bad thing", "evidence": "app.py"},
+        "demo",
+    )
+    merged, stats = reconcile_findings([finding], [current])
+    assert merged[0]["status"] == "open"
+    assert merged[0]["regressed"] is True
+    assert stats["regressed"] == 1
