@@ -41,6 +41,8 @@ class ProviderResult:
     provider: str
     operation: str
     timestamp: str
+    schema: str = "devflow.provider-result"
+    schema_version: int = 1
     data: dict[str, Any] = field(default_factory=dict)
     evidence: list[dict[str, Any]] = field(default_factory=list)
     resource_id: str | None = None
