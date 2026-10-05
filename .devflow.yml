@@ -10,7 +10,10 @@ project:
   type: "monorepo"
   criticality: "medium"
   expected_traffic: "n/a"
-  budget_profile: "lean"\n  ownership: "internal"\n  engagement: "greenfield"\n  client_id:
+  budget_profile: "lean"
+  ownership: "internal"
+  engagement: "greenfield"
+  client_id:
 
 preferences:
   philosophy: "simple-first"
