@@ -30,3 +30,4 @@ def test_gate_cli_reports_unknown_without_runtime_evidence(tmp_path: Path):
     assert main(["init", "--target", str(tmp_path), "--non-interactive", "--name", "Demo", "--stage", "production"]) == 0
     assert main(["audit", "--target", str(tmp_path)]) == 0
     assert main(["gate", "production", "--target", str(tmp_path)]) == 8
+    assert (tmp_path / "ops" / "reports" / "gate-production-latest.json").exists()
