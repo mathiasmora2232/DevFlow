@@ -78,3 +78,16 @@ def test_reconcile_reopens_fixed_finding_as_regression():
     assert merged[0]["status"] == "open"
     assert merged[0]["regressed"] is True
     assert stats["regressed"] == 1
+
+
+def test_waiver_requires_reason_and_approver(tmp_path: Path):
+    finding = normalize_legacy_finding(
+        {"category": "security", "severity": "low", "message": "Known issue", "evidence": "app.py"},
+        "demo",
+    )
+    save_findings(tmp_path, [finding])
+    import pytest
+    with pytest.raises(ValueError, match="reason"):
+        update_finding_status(tmp_path, finding["id"], "accepted_risk")
+    with pytest.raises(ValueError, match="approved_by"):
+        update_finding_status(tmp_path, finding["id"], "accepted_risk", "temporary")
