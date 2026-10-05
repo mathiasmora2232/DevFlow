@@ -1,0 +1,34 @@
+version: 1
+
+project:
+  name: "SmartAhorra"
+  slug: "smartahorra"
+  stage: "mvp"
+  type: "fullstack"
+  criticality: "medium"
+  expected_traffic: "growing"
+  budget_profile: "lean"
+
+preferences:
+  philosophy: "simple-first"
+  prefer_incremental_scaling: true
+  avoid_premature_microservices: true
+  avoid_premature_kubernetes: true
+
+# Completar según el repositorio real antes de usar.
+stack:
+  backend:
+    primary: "TODO"
+  frontend:
+    primary: "TODO"
+  database:
+    primary: "postgresql"
+  infrastructure:
+    os: "ubuntu-server"
+    container: "docker"
+    edge: "cloudflare"
+  ci_cd:
+    provider: "github-actions"
+  observability:
+    metrics: ["grafana"]
+    load_testing: ["k6"]
