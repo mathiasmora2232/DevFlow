@@ -6,6 +6,7 @@ import re
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .domain import Finding, FindingStatus
 from .utils import now_iso, slugify
 
@@ -126,6 +127,7 @@ def save_findings(root: Path, findings: list[dict[str, Any]]) -> Path:
     payload = {
         "schema": "devflow.findings",
         "schema_version": 1,
+        "devflow_version": __version__,
         "generated_at": now_iso(),
         "findings": findings,
     }
