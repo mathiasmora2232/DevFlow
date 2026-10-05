@@ -4,6 +4,13 @@
 
 ### Added
 
+- DevFlow CLI v0.4.
+- StellarCode MCP integration with secure project binding.
+- `/stellar-status`, `/kanban`, `/siguiente`, `stellar-bind`, `/planificar --stellar` and `/traza --stellar`.
+- Remote-first backlog synchronization.
+- JWT token lookup via environment variable only; tokens are never stored in project config.
+- GitHub Actions CI for DevFlow tests.
+
 - DevFlow CLI v0.3.
 - `/doctor`: readiness de entorno, tooling y espacio libre.
 - `/docs`: auditoría de documentación con score y quality gate opcional.
