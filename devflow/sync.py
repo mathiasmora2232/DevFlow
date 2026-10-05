@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from dataclasses import asdict, dataclass, field
 from enum import Enum
@@ -87,3 +88,45 @@ class IdempotencyStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         return True
+
+
+@dataclass(slots=True)
+class Event:
+    event_id: str
+    provider: str
+    event_type: str
+    project_id: str
+    resource_type: str
+    resource_id: str
+    occurred_at: str
+    received_at: str = field(default_factory=now_iso)
+    payload_hash: str = ""
+    evidence: list[dict[str, Any]] = field(default_factory=list)
+
+    @classmethod
+    def from_payload(
+        cls,
+        *,
+        event_id: str,
+        provider: str,
+        event_type: str,
+        project_id: str,
+        resource_type: str,
+        resource_id: str,
+        occurred_at: str,
+        payload: Any,
+    ) -> "Event":
+        raw = json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str).encode("utf-8")
+        return cls(
+            event_id=event_id,
+            provider=provider,
+            event_type=event_type,
+            project_id=project_id,
+            resource_type=resource_type,
+            resource_id=resource_id,
+            occurred_at=occurred_at,
+            payload_hash=hashlib.sha256(raw).hexdigest(),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
