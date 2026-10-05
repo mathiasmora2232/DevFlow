@@ -4,6 +4,8 @@ from dataclasses import asdict, dataclass, field
 from enum import Enum
 from typing import Any, Protocol
 
+from . import __version__
+
 
 class CapabilityClass(str, Enum):
     READ_ONLY = "read_only"
@@ -43,6 +45,7 @@ class ProviderResult:
     timestamp: str
     schema: str = "devflow.provider-result"
     schema_version: int = 1
+    devflow_version: str = __version__
     data: dict[str, Any] = field(default_factory=dict)
     evidence: list[dict[str, Any]] = field(default_factory=list)
     resource_id: str | None = None
