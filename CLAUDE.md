@@ -58,20 +58,20 @@ Conversation memory is never a source of truth.
 
 ## Current recommended next version
 
-**v0.5 Foundations is implemented. The next milestone is v0.6 Analyzers.**
+The next milestone is **v0.6 Analyzers**.
 
-Build v0.6 on top of the v0.5 contracts:
+v0.5 Foundations is implemented and provides:
 
-1. analyzer registry/plugin architecture;
-2. FastAPI/Python analyzer;
-3. Node/Next/React analyzer;
-4. Angular analyzer;
-5. PostgreSQL analyzer;
-6. Docker analyzer;
-7. GitHub Actions analyzer;
-8. then Go/Quarkus/PHP and the remaining catalog.
+1. canonical domain contracts;
+2. Finding model + stable fingerprint + reconciliation;
+3. config schema/validation/migrations;
+4. provider capability interface and registry;
+5. sync/conflict/idempotency/event primitives;
+6. quality-gate engine + profiles;
+7. user/service-account principal model;
+8. versioned machine-readable contracts.
 
-Every analyzer must emit canonical Findings with stable fingerprints, evidence and confidence.
+For v0.6, implement analyzers through the v0.5 contracts. Every analyzer must emit canonical findings with stable fingerprints; do not bypass the provider/gate/config abstractions.
 
 ## Production
 
