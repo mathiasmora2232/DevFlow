@@ -31,6 +31,11 @@ def _normalize_rule_text(message: str) -> str:
 def _evidence_key(raw: Any) -> str:
     if isinstance(raw, str):
         value = raw.replace("\\", "/").strip()
+        if "," in value or "\n" in value:
+            return ""
+        path_like = "/" in value or bool(re.search(r"\.[a-zA-Z0-9]{1,8}(?::\d+)?$", value))
+        if not path_like:
+            return ""
         return re.sub(r":\d+$", "", value)
     if isinstance(raw, dict):
         file = str(raw.get("file") or raw.get("path") or "")
@@ -114,8 +119,8 @@ def load_findings(root: Path) -> list[dict[str, Any]]:
         return []
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-    except (json.JSONDecodeError, OSError):
-        return []
+    except (json.JSONDecodeError, OSError) as exc:
+        raise ValueError(f"Unable to read finding history {path}: {exc}") from exc
     if isinstance(payload, dict):
         return list(payload.get("findings", []))
     return payload if isinstance(payload, list) else []
@@ -131,7 +136,9 @@ def save_findings(root: Path, findings: list[dict[str, Any]]) -> Path:
         "generated_at": now_iso(),
         "findings": findings,
     }
-    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+    tmp.replace(path)
     return path
 
 
