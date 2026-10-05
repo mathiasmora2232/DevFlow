@@ -43,6 +43,7 @@ ALIASES = {
     "/stellar-capabilities": "stellar-capabilities",
     "/adoptar-stellar": "stellar-adopt", "stellar-adopt": "stellar-adopt",
     "/sincronizar-stellar": "stellar-sync", "stellar-sync": "stellar-sync",
+    "/time": "time",
     "/proyectos": "stellar-projects", "projects": "stellar-projects",
     "/roles": "roles",
     "/miembros": "miembros", "members": "miembros",
@@ -378,6 +379,54 @@ def cmd_stellar_sync(args) -> int:
     print("Native: " + (", ".join(result.get("native", [])) or "-"))
     print("Bridge: " + (", ".join(result.get("bridge", [])) or "-"))
     print("Missing: " + (", ".join(result.get("missing", [])) or "-"))
+    return 0
+
+
+def cmd_time(args) -> int:
+    root = _target(args.target)
+    try:
+        stellar = stellar_config(root)
+        project_id = int(stellar["project_id"])
+        tools = set(stellar_list_tools(root, require_project=True))
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+
+    required = {
+        "start": "start_time",
+        "stop": "stop_time",
+        "list": "list_time_entries",
+        "summary": "get_time_summary",
+        "create": "create_time_entry",
+        "correct": "correct_time_entry",
+    }
+    tool = required[args.action]
+    if tool not in tools:
+        print(f"PENDING: StellarCode MCP does not expose {tool} yet. Time tracking remains MCP-required; DevFlow will not bypass it through REST/local shadow state.")
+        return 6
+
+    payload = {"project_id": project_id}
+    if args.task_id is not None:
+        payload["work_item_id"] = args.task_id
+    if args.category:
+        payload["category"] = args.category
+    if args.description:
+        payload["description"] = args.description
+    if args.entry_id is not None:
+        payload["entry_id"] = args.entry_id
+    if args.minutes is not None:
+        payload["duration_seconds"] = int(args.minutes) * 60
+    if args.reason:
+        payload["reason"] = args.reason
+    if args.billable is not None:
+        payload["billable"] = bool(args.billable)
+
+    try:
+        result = stellar_call_tool(root, tool, payload)
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    print(json.dumps(result, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -718,8 +767,7 @@ def build_parser() -> argparse.ArgumentParser:
     ds = sub.add_parser("descubrir", help="Genera baseline de adopción/discovery"); ds.add_argument("--target", default="."); ds.add_argument("--no-audit", action="store_true"); ds.add_argument("--stellar", action="store_true"); ds.add_argument("--dry-run", action="store_true"); ds.set_defaults(func=cmd_discover)
     sc = sub.add_parser("stellar-capabilities", help="Muestra qué dominios soporta el MCP actual"); sc.add_argument("--target", default="."); sc.set_defaults(func=cmd_stellar_capabilities)
     sa = sub.add_parser("stellar-adopt", help="Crea el proyecto en StellarCode y lo vincula localmente"); sa.add_argument("--target", default="."); sa.add_argument("--client-id", type=int); sa.add_argument("--description"); sa.add_argument("--force", action="store_true"); sa.set_defaults(func=cmd_stellar_adopt)
-    sy = sub.add_parser("stellar-sync", help="Sincroniza discovery usando capacidades MCP disponibles"); sy.add_argument("--target", default="."); sy.add_argument("--dry-run", action="store_true"); sy.add_argument("--no-audit", action="store_true"); sy.set_defaults(func=cmd_stellar_sync)
-    sb = sub.add_parser("stellar-bind", help="Vincula el proyecto local con StellarCode MCP"); sb.add_argument("--target", default="."); sb.add_argument("--project-id", type=int, required=True); sb.add_argument("--url", default="https://api.stellarcodelabs.lat/mcp"); sb.add_argument("--token-env", default="STELLARCODE_TOKEN"); sb.set_defaults(func=cmd_stellar_bind)
+    sy = sub.add_parser("stellar-sync", help="Sincroniza discovery usando capacidades MCP disponibles"); sy.add_argument("--target", default="."); sy.add_argument("--dry-run", action="store_true"); sy.add_argument("--no-audit", action="store_true"); sy.set_defaults(func=cmd_stellar_sync)\n    tm = sub.add_parser("time", help="Time tracking obligatorio a través de StellarCode MCP"); tm.add_argument("action", choices=["start","stop","list","summary","create","correct"]); tm.add_argument("--target", default="."); tm.add_argument("--task-id", type=int); tm.add_argument("--entry-id", type=int); tm.add_argument("--minutes", type=int); tm.add_argument("--category", default="development"); tm.add_argument("--description"); tm.add_argument("--reason"); tm.add_argument("--billable", action=argparse.BooleanOptionalAction, default=None); tm.set_defaults(func=cmd_time)\n    sb = sub.add_parser("stellar-bind", help="Vincula el proyecto local con StellarCode MCP"); sb.add_argument("--target", default="."); sb.add_argument("--project-id", type=int, required=True); sb.add_argument("--url", default="https://api.stellarcodelabs.lat/mcp"); sb.add_argument("--token-env", default="STELLARCODE_TOKEN"); sb.set_defaults(func=cmd_stellar_bind)
     ss = sub.add_parser("stellar-status", help="Muestra identidad y permisos efectivos en StellarCode"); ss.add_argument("--target", default="."); ss.set_defaults(func=cmd_stellar_status)
     sp = sub.add_parser("stellar-projects", help="Lista proyectos accesibles al usuario StellarCode"); sp.add_argument("--target", default="."); sp.set_defaults(func=cmd_stellar_projects)
     rl = sub.add_parser("roles", help="Lista roles y permisos de proyecto"); rl.add_argument("--target", default="."); rl.set_defaults(func=cmd_roles)
