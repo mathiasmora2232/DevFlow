@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass, field
 from typing import Any
 
+from . import __version__
 from .findings import waiver_active
 from .utils import now_iso
 
@@ -77,6 +78,7 @@ class GateResult:
     result: str
     schema: str = "devflow.gate-result"
     schema_version: int = 1
+    devflow_version: str = __version__
     checks: list[dict[str, Any]] = field(default_factory=list)
     evidence: list[dict[str, Any]] = field(default_factory=list)
     missing_evidence: list[str] = field(default_factory=list)
