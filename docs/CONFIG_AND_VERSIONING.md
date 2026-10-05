@@ -104,3 +104,17 @@ Maintain:
 - backwards-compatible fields when practical.
 
 If a capability is unavailable, report `UNSUPPORTED_CAPABILITY` rather than guessing.
+
+
+## v0.5 implementation
+
+Implemented:
+
+- schema v2 generation for new projects;
+- legacy v1 recognition;
+- `devflow validate`;
+- `devflow config show`;
+- `devflow config migrate --check`;
+- safe migration with backup before mutation;
+- rejection/removal of raw StellarCode credential fields;
+- explicit operational profile mapping.
