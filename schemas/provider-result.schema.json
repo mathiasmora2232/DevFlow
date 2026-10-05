@@ -5,6 +5,7 @@
   "required": [
     "schema",
     "schema_version",
+    "devflow_version",
     "ok",
     "provider",
     "operation",
@@ -34,6 +35,9 @@
     },
     "evidence": {
       "type": "array"
+    },
+    "devflow_version": {
+      "type": "string"
     }
   }
 }
