@@ -5,6 +5,8 @@ from collections import Counter
 from pathlib import Path
 from typing import Callable
 
+from . import __version__
+
 from .detector import detect_stack, _runtime_candidate
 from .scoring import weighted_score, evidence_confidence, cap_for_critical_security
 from .stackfit import evaluate_stack_fit
@@ -201,6 +203,9 @@ def audit_project(root: Path, config: dict) -> dict:
             findings.append(f)
 
     return {
+        "schema": "devflow.audit",
+        "schema_version": 1,
+        "devflow_version": __version__,
         "generated_at": now_iso(), "mode": "static", "root": str(root),
         "detected_stack": detected,
         "project_health_score": health,
