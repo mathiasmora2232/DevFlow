@@ -66,6 +66,9 @@ Un proyecto puede ser sano y no usar tu stack favorito. Eso no debe penalizar su
 | `/doctor` | Diagnosticar entorno, herramientas y espacio libre |
 | `/docs` | Auditar calidad/cobertura de documentación |
 | `/secretos` | Detectar posibles secretos con salida redactada |
+| `/validar` | Validar schema y seguridad de `.devflow.yml` |
+| `/findings` | Consultar y gestionar lifecycle de hallazgos persistentes |
+| `/gate` | Evaluar quality gates deterministas según perfil/evidencia |
 | `/planificar` | Convertir una necesidad en plan ejecutable |
 | `/ejecutar` | Implementar trabajo aprobado |
 | `/auditar` | Auditoría integral con score 0–100 |
