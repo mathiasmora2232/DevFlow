@@ -13,7 +13,32 @@
 - Enable writes after read/RBAC verification.
 - Retire legacy shared-secret access after clients migrate.
 
-## P1 — DevFlow v0.6 Analyzers
+## P1 — DevFlow v0.5.1 Project Discovery + Hub + Time Tracking
+
+- Ownership model: internal / external_client.
+- Client binding through StellarCode.
+- Engagement types: greenfield / migration / refactor / modernization / maintenance / audit_only.
+- Project name inference with user correction.
+- Greenfield onboarding flow.
+- Existing-system discovery flow.
+- DiscoverySnapshot model.
+- Initial discovery orchestration.
+- Structured stack inventory sync.
+- Environment/config variable metadata sync without values.
+- Infrastructure inventory sync.
+- AuditRun publication to StellarCode.
+- Findings/scores/evidence sync.
+- Phase/objective sync.
+- Backlog proposal sync with approval.
+- Pending-sync queue for offline work.
+- TimeSession / TimeEntry models.
+- Time start/stop/manual/correction capabilities.
+- Billable/non-billable tracking.
+- Project/principal/work-item linkage.
+- MCP audit history for time corrections.
+- End-to-end onboarding tests for greenfield and existing projects.
+
+## P2 — DevFlow v0.6 Analyzers
 
 First wave:
 - FastAPI/Python analyzer.
@@ -27,6 +52,7 @@ First wave:
 - Stable fingerprints from every analyzer.
 - Evidence/confidence per finding.
 - False-positive regression fixtures.
+- Structured StellarCode publication for every analyzer.
 
 Second wave:
 - Go.
@@ -38,7 +64,7 @@ Second wave:
 - Dead-code adapters.
 - Duplication analyzers.
 
-## P2 — DevFlow v0.7 GitHub / CI
+## P3 — DevFlow v0.7 GitHub / CI
 
 - GitHub provider.
 - PR read/create/review.
@@ -49,18 +75,10 @@ Second wave:
 - StellarCode sync.
 - Release metadata.
 
-## P3 — DevFlow v0.8 Release / Deploy
+## P4 — DevFlow v0.8/v0.9 Operations
 
-- Release model/provider execution.
-- Deploy provider abstraction.
-- Rollback.
-- Migration awareness.
-- Staging preflight.
+- Release/deploy/rollback providers.
 - Production verification.
-- Post-deploy evidence.
-
-## P4 — DevFlow v0.9 Runtime / Observability / OAuth
-
 - k6.
 - Grafana/Prometheus.
 - Sentry.

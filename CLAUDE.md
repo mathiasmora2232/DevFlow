@@ -9,13 +9,15 @@ Read in this order before implementing a new DevFlow version:
 1. `DEVFLOW_ROADMAP.md`
 2. `docs/CLAUDE_HANDOFF.md`
 3. `docs/DOMAIN_MODEL.md`
-4. `docs/FINDING_LIFECYCLE.md`
-5. `docs/PROVIDER_CONTRACT.md`
-6. `docs/SYNC_MODEL.md`
-7. `docs/CONFIG_AND_VERSIONING.md`
-8. `docs/QUALITY_GATES.md`
-9. relevant `skills/*/SKILL.md`
-10. `ops/BACKLOG.md`
+4. `docs/PROJECT_DISCOVERY.md`
+5. `docs/STELLARCODE_HUB_CONTRACT.md`
+6. `docs/FINDING_LIFECYCLE.md`
+7. `docs/PROVIDER_CONTRACT.md`
+8. `docs/SYNC_MODEL.md`
+9. `docs/CONFIG_AND_VERSIONING.md`
+10. `docs/QUALITY_GATES.md`
+11. relevant `skills/*/SKILL.md`
+12. `ops/BACKLOG.md`
 
 Use `docs/COMMANDS.md` for slash-command routing.
 
@@ -31,6 +33,12 @@ Use `docs/COMMANDS.md` for slash-command routing.
 Conversation memory is never a source of truth.
 
 ## Engineering rules
+
+- StellarCode is the mandatory operational hub for managed projects; local-only runs are offline/pending-sync mode.
+- New-project onboarding must distinguish internal vs external client ownership and greenfield vs migration/refactor/modernization/maintenance/audit-only engagement.
+- Existing repositories must be discovered first; detected stack, audits, findings, environment/config metadata and infra observations must be synchronized as structured MCP data.
+- Greenfield projects define objectives/scope/stack before implementation; existing systems establish a current-state baseline before proposing target-state changes.
+- Time tracking is mandatory for managed work and synchronizes to StellarCode MCP.
 
 - Evidence over assumptions.
 - Keep Project Health, Stack Fit and Evidence Confidence separate.

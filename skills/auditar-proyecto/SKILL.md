@@ -1,44 +1,60 @@
 ---
 name: auditar-proyecto
-description: Ejecuta una auditoría integral del repositorio y genera Project Health, Stack Fit y Evidence Confidence con evidencia trazable.
+description: Ejecuta auditorías normalizadas, genera findings/evidence/scores y publica el resultado estructurado en StellarCode Studio.
 ---
 
 # /auditar
 
-## Ejecución
+## Objetivo
 
-```bash
-devflow /auditar --target .
-```
+Auditar con evidencia y alimentar el estado técnico compartido del proyecto.
 
-## Salidas
-
-```text
-ops/reports/audit-YYYYMMDD-HHMMSS.json
-ops/reports/audit-YYYYMMDD-HHMMSS.md
-ops/reports/latest.json
-ops/reports/latest.md
-```
+El Markdown es un artefacto humano. El resultado estructurado sincronizado con StellarCode es el estado operacional.
 
 ## Flujo
 
-1. Leer `.devflow.yml`.
-2. Detectar stack y tipo de proyecto.
-3. Ejecutar análisis estático conservador.
-4. Evaluar categorías aplicables del Project Health Score.
-5. Marcar `N/A` cuando no exista evidencia razonable o una categoría no aplique.
-6. Calcular Stack Fit por separado.
-7. Calcular Evidence Confidence.
-8. Aplicar caps por hallazgos críticos de seguridad.
-9. Generar hallazgos con severidad + evidencia.
-10. Sincronizar `ops/TRACE.md`.
+1. Resolver project/repository binding.
+2. Leer `.devflow.yml`.
+3. Detectar stack/tipo.
+4. Ejecutar analyzers aplicables.
+5. Emitir canonical Findings.
+6. Reconciliar fingerprints/historial.
+7. Calcular Project Health.
+8. Calcular Stack Fit por separado.
+9. Calcular Evidence Confidence.
+10. Registrar missing evidence / N/A.
+11. Persistir reportes locales.
+12. Publicar AuditRun + findings + scores + evidence al MCP.
+13. Actualizar trace/sync status.
 
-## Restricción crítica
+## AuditRun remoto
 
-La auditoría estática **no puede** probar carga real, disponibilidad de producción ni seguridad completa.
+Publicar conceptualmente:
 
-`server_load` debe permanecer `N/A` hasta contar con métricas/runtime/k6/Grafana u otra evidencia equivalente.
+```text
+audit_id
+project_id
+repository_id?
+audit_type
+devflow_version
+started_at
+completed_at
+status
+score?
+confidence?
+findings[]
+evidence[]
+missing_evidence[]
+```
 
-## Futuras extensiones
+## Auditorías especializadas
 
-El mismo resultado JSON será consumido por analizadores específicos y MCP/adapters de runtime sin cambiar el contrato del skill.
+Security, secrets, docs, SEO, performance, database, dependencies, DevOps, architecture, code quality y futuras auditorías deben usar el mismo contrato y sincronizar al Hub.
+
+## Restricciones
+
+- No afirmar runtime health sin runtime evidence.
+- No subir secretos; variables/config se sincronizan solo como metadata.
+- No crear tareas automáticamente por cada finding.
+- Si StellarCode no está disponible, guardar localmente y dejar sync pendiente.
+- Los writes remotos deben ser idempotentes.

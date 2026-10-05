@@ -1,32 +1,51 @@
 ---
 name: sincronizar-traza
-description: Sincroniza el snapshot operativo con el estado verificable de Git sin asumir merge, deploy o producción verificada.
+description: Sincroniza Git, DevFlow y StellarCode sin colapsar estados técnicos y operacionales.
 ---
 
 # /traza
 
-## Ejecución
+## Fuentes
 
-```bash
-devflow /traza --target . --environment local
-```
-
-Actualiza en `ops/TRACE.md`:
-
-- timestamp;
-- branch;
-- revision;
-- environment;
-- estado básico del working tree.
+- Git: branch/commit/working tree.
+- StellarCode: project/work item/phase/time/operational status.
+- Runtime provider: deploy/health cuando exista.
+- DevFlow: findings/audits/gates/local reports.
 
 ## Invariantes
 
 ```text
 merged != deployed
 deployed != verified
-verified != closed si quedan pendientes
+verified != closed
 ```
 
-## Próxima fase
+## Sync
 
-Cuando existan adaptadores GitHub/CI/MCP, este skill incorporará PRs, workflows, releases y deployments como evidencia adicional manteniendo el mismo archivo de estado.
+Actualizar el snapshot local y publicar los cambios estructurados correspondientes al Hub.
+
+Si existe conflicto, reportar:
+
+```text
+field
+local_value
+remote_value
+authority
+recommended_resolution
+```
+
+No sobrescribir conflictos ambiguos silenciosamente.
+
+## Time tracking
+
+La traza puede referenciar sesiones/entradas de tiempo, pero StellarCode es la fuente operacional de TimeSession/TimeEntry.
+
+## Offline
+
+Si MCP no responde:
+
+```text
+sync_status=pending
+```
+
+La operación local puede continuar, pero no se declara sincronizada.
