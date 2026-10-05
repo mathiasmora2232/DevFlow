@@ -573,7 +573,17 @@ def cmd_gate(args) -> int:
         "verified_ci": args.verified_ci,
     }
     result = evaluate_gate(args.gate, cfg, audit, evidence)
-    print(json.dumps(result.to_dict(), indent=2, ensure_ascii=False))
+    payload = result.to_dict()
+    reports = root / "ops" / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
+    report_path = reports / f"gate-{args.gate}-{stamp}.json"
+    latest_path = reports / f"gate-{args.gate}-latest.json"
+    serialized = json.dumps(payload, indent=2, ensure_ascii=False)
+    report_path.write_text(serialized, encoding="utf-8")
+    latest_path.write_text(serialized, encoding="utf-8")
+    print(serialized)
+    print(f"Report: {report_path}")
     return 0 if result.result in {"pass", "warn"} else 8
 
 
