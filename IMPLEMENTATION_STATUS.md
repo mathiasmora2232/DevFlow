@@ -58,7 +58,9 @@ Those capabilities require adapters/live evidence and remain approval-gated wher
 
 ### v0.6 Analyzers
 
-The v0.5 foundation contracts are implemented. Next priority is the analyzer registry and high-value stack analyzers:
+Use the v0.5 contracts to implement stack-specific analyzers. Every analyzer must emit canonical findings with stable fingerprints, evidence and confidence.
+
+First wave:
 
 - FastAPI/Python;
 - Node/Next/React;
@@ -67,4 +69,4 @@ The v0.5 foundation contracts are implemented. Next priority is the analyzer reg
 - Docker;
 - GitHub Actions.
 
-Every analyzer must emit the canonical Finding contract and stable fingerprints.
+Do not bypass config schema, provider capabilities, finding reconciliation or gate policy.
