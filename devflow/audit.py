@@ -8,6 +8,7 @@ from typing import Callable
 from . import __version__
 
 from .detector import detect_stack, _runtime_candidate
+from .findings import normalize_legacy_finding
 from .scoring import weighted_score, evidence_confidence, cap_for_critical_security
 from .stackfit import evaluate_stack_fit
 from .utils import iter_project_files, read_text, relative, now_iso
@@ -58,16 +59,36 @@ def audit_project(root: Path, config: dict) -> dict:
         for kind, pat in secret_patterns:
             if pat.search(txt):
                 sec_score -= 30
-                findings.append({"severity": "critical" if kind == "private_key" else "high", "category": "security", "message": f"Posible secreto expuesto en {rel}", "evidence": rel})
+                findings.append({
+                    "rule_id": "security.private_key" if kind == "private_key" else "security.generic_secret",
+                    "severity": "critical" if kind == "private_key" else "high",
+                    "category": "security",
+                    "message": f"Posible secreto expuesto en {rel}",
+                    "evidence": rel,
+                    "location": {"file": rel},
+                })
                 sec_ev.append(rel)
                 break
     if any(r == ".env" or r.endswith("/.env") for r in rel_lower):
         sec_score -= 15
-        findings.append({"severity": "high", "category": "security", "message": "Archivo .env presente en el árbol analizado; confirmar que no esté versionado con secretos.", "evidence": ".env"})
+        findings.append({
+            "rule_id": "security.env_file",
+            "severity": "high",
+            "category": "security",
+            "message": "Archivo .env presente en el árbol analizado; confirmar que no esté versionado con secretos.",
+            "evidence": ".env",
+            "location": {"file": ".env"},
+        })
         sec_ev.append(".env")
     if re.search(r"allow_origins\s*=\s*\[?['\"]\*", joined, re.I) or re.search(r"Access-Control-Allow-Origin.{0,20}\*", joined, re.I):
         sec_score -= 10
-        findings.append({"severity": "medium", "category": "security", "message": "CORS wildcard detectado; validar si es intencional.", "evidence": "repository search"})
+        findings.append({
+            "rule_id": "security.cors_wildcard",
+            "severity": "medium",
+            "category": "security",
+            "message": "CORS wildcard detectado; validar si es intencional.",
+            "evidence": "repository search",
+        })
         sec_ev.append("CORS wildcard")
     categories.append(_category("security", max(0, sec_score), sec_conf, sec_ev))
 
@@ -80,7 +101,14 @@ def audit_project(root: Path, config: dict) -> dict:
             large.append((relative(p, root), lines))
     arch = 88 - min(24, len(large) * 4)
     if large:
-        findings.append({"severity": "medium", "category": "architecture", "message": f"{len(large)} archivos fuente superan 700 líneas; revisar hotspots antes de dividir por reflejo.", "evidence": ", ".join(x[0] for x in large[:5])})
+        findings.append({
+            "rule_id": "architecture.large_files",
+            "severity": "medium",
+            "category": "architecture",
+            "message": f"{len(large)} archivos fuente superan 700 líneas; revisar hotspots antes de dividir por reflejo.",
+            "evidence": ", ".join(x[0] for x in large[:5]),
+            "stable_key": "large_source_files",
+        })
     categories.append(_category("architecture", max(0, arch), 45, [f"source_files={len(source_files)}", f"large_files={len(large)}"]))
 
     # Code quality
@@ -89,7 +117,13 @@ def audit_project(root: Path, config: dict) -> dict:
     lint_markers = [x for x in rel_lower if any(k in x for k in ["eslint", "ruff", "flake8", "checkstyle", "golangci", "phpstan", "pint.json"])]
     if lint_markers: quality += 5
     if todo_count > 20:
-        findings.append({"severity": "low", "category": "code_quality", "message": f"Se detectaron {todo_count} marcadores TODO/FIXME/HACK.", "evidence": "repository search"})
+        findings.append({
+            "rule_id": "code_quality.todo_fixme_hack",
+            "severity": "low",
+            "category": "code_quality",
+            "message": f"Se detectaron {todo_count} marcadores TODO/FIXME/HACK.",
+            "evidence": "repository search",
+        })
     categories.append(_category("code_quality", min(100, max(0, quality)), 50, lint_markers[:5] + [f"todo_fixme_hack={todo_count}"]))
 
     # Maintainability
@@ -123,7 +157,13 @@ def audit_project(root: Path, config: dict) -> dict:
         test_score = min(95, 45 + ratio * 220)
         if not test_files:
             test_score = 30
-            findings.append({"severity": "high", "category": "testing", "message": "No se detectaron archivos de prueba.", "evidence": "repository tree"})
+            findings.append({
+                "rule_id": "testing.no_tests",
+                "severity": "high",
+                "category": "testing",
+                "message": "No se detectaron archivos de prueba.",
+                "evidence": "repository tree",
+            })
         categories.append(_category("testing", round(test_score, 1), 55, [f"test_files={len(test_files)}", f"source_files={len(source_files)}"]))
     else:
         categories.append(_category("testing", None, 10, ["No source files detected"]))
@@ -201,6 +241,13 @@ def audit_project(root: Path, config: dict) -> dict:
     for c in categories:
         for f in c.get("findings", []):
             findings.append(f)
+
+    project_slug = str(config.get("project", {}).get("slug") or root.name)
+    repository_identity = str(config.get("repository", {}).get("id") or config.get("repository_id") or project_slug)
+    findings = [
+        normalize_legacy_finding(finding, project_slug, repository_identity)
+        for finding in findings
+    ]
 
     return {
         "schema": "devflow.audit",
