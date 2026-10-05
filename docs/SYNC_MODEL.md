@@ -1,5 +1,7 @@
 # Sync, Conflict and Idempotency Model
 
+> Implemented in DevFlow v0.5. This document remains the canonical behavioral contract.
+
 DevFlow spans local files, Git and StellarCode. Synchronization must be explicit and deterministic.
 
 ## Source authority by domain
@@ -137,3 +139,16 @@ DevFlow core must remain useful without StellarCode:
 - local plan.
 
 Remote-dependent commands must fail clearly, never fabricate success.
+
+
+## v0.5 implementation
+
+Implemented in `devflow.sync`:
+
+- source authority map;
+- SyncConflict / SyncResult;
+- deterministic conflict detection;
+- local IdempotencyStore;
+- normalized Event model with deterministic payload hashing.
+
+Provider-specific event ingestion and remote conflict resolution remain future work.

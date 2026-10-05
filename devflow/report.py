@@ -25,7 +25,13 @@ def audit_markdown(result: dict) -> str:
     if not fs:
         lines.append("No static findings recorded.")
     for f in fs:
-        lines.append(f"- **{f.get('severity','info').upper()} · {f.get('category')}** — {f.get('message')} ({f.get('evidence','')})")
+        message = f.get("description") or f.get("message") or f.get("title") or "Finding"
+        evidence = f.get("evidence", "")
+        if isinstance(evidence, list):
+            evidence = "; ".join(str(x.get("value") or x.get("file") or x.get("source") or "") if isinstance(x, dict) else str(x) for x in evidence[:3])
+        status = f.get("status")
+        status_text = f" · {status}" if status else ""
+        lines.append(f"- **{f.get('severity','info').upper()} · {f.get('category')}{status_text}** — {message} ({evidence})")
     lines += ["", "## Unknowns / missing evidence", ""]
     unknowns = result.get("unknowns", [])
     if unknowns:

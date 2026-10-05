@@ -151,7 +151,7 @@ DevFlow debe:
 | Área | Estado | Nota |
 |---|---|---|
 | Skills base | ✅ Implementado | 25+ skills canónicas |
-| CLI base | ✅ Implementado | v0.4 |
+| CLI base | ✅ Implementado | v0.5 |
 | Inicialización | ✅ Implementado | interactiva y no interactiva |
 | Stack detection | ✅ Implementado | conservador |
 | Auditoría estática | ✅ Implementado | con evidencia y N/A |
@@ -171,12 +171,12 @@ DevFlow debe:
 | Runtime observability | ❌ Pendiente | requiere adapters |
 | Production verification | ❌ Pendiente | requiere runtime evidence |
 | Deploy automation | ❌ Pendiente | approval-gated |
-| Domain contracts | 📐 Documentado | implementar en v0.5 |
-| Finding lifecycle/fingerprints | 📐 Documentado | implementar en v0.5 |
-| Config schema/migrations | 📐 Documentado | implementar en v0.5 |
-| Provider capability layer | 📐 Documentado | implementar en v0.5 |
-| Sync/conflict/idempotency | 📐 Documentado | implementar en v0.5 |
-| Quality gates/profiles | 📐 Documentado | implementar en v0.5 |
+| Domain contracts | ✅ Implementado | modelos canónicos + tests |
+| Finding lifecycle/fingerprints | ✅ Implementado | persistencia + reconciliación + waivers |
+| Config schema/migrations | ✅ Implementado | schema v2 + validate + migrate |
+| Provider capability layer | ✅ Implementado | protocol + registry + normalized results/errors |
+| Sync/conflict/idempotency | ✅ Implementado | authority/conflicts/events/idempotency |
+| Quality gates/profiles | ✅ Implementado | deterministic gate engine |
 | Deep framework analyzers | 📐 Diseñado | v0.6 |
 | GitHub/CI ingestion | ❌ Pendiente | v0.7 |
 | Cost analysis | ❌ Pendiente | futuro |
@@ -227,6 +227,11 @@ Leyenda:
 | Backlog / Kanban | ✅ | ✅ | ✅ | StellarCode | ✅ |
 | Siguiente acción | ✅ | ✅ | ✅ | StellarCode | ✅ |
 | Trace | ✅ | ✅ | ✅ | Git + StellarCode | ✅ |
+| Finding lifecycle | ✅ | ✅ | N/A | DevFlow local | ✅ |
+| Config validation/migration | ✅ | ✅ | N/A | local | ✅ |
+| Quality gates | ✅ | ✅ | N/A | evidence-driven | ✅ |
+| Provider capability contract | ✅ | N/A | N/A | core abstraction | ✅ |
+| Sync/idempotency primitives | ✅ | N/A | N/A | core abstraction | ✅ |
 | Auditoría general | ✅ | ✅ | 🚧 | local | 🚧 |
 | Project Health | ✅ | ✅ | N/A | local evidence | ✅ |
 | Stack Fit | ✅ | ✅ | N/A | local evidence | ✅ |
@@ -502,11 +507,11 @@ Pendiente para completar rollout:
 - activar writes de forma controlada;
 - retirar shared secret legacy.
 
-## v0.5 — Foundations
+## v0.5 — Foundations ✅ ✅
 
-Objetivo: estabilizar los contratos internos antes de multiplicar analyzers/providers.
+Objetivo cumplido: estabilizar los contratos internos antes de multiplicar analyzers/providers.
 
-Entregar:
+Entregado:
 
 - modelos canónicos para Project, Repository, WorkItem, Finding, Evidence, Decision, Risk, Release, Deployment, Environment y Principal;
 - Finding lifecycle;
@@ -531,7 +536,7 @@ Documentos canónicos:
 - `docs/CONFIG_AND_VERSIONING.md`;
 - `docs/QUALITY_GATES.md`.
 
-### Definition of Done v0.5
+### Definition of Done v0.5 ✅
 
 - contratos representados en código y tests;
 - fingerprint de findings determinístico;
@@ -954,18 +959,7 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - writes;
 - retiro gradual del shared secret legacy.
 
-## P1 — v0.5 Foundations
-
-- domain contracts;
-- Finding lifecycle;
-- fingerprint/reconciliation;
-- config schema + validate + migrate;
-- provider capability interface;
-- sync conflicts + idempotency;
-- quality gates + profiles;
-- service identity model.
-
-## P2 — v0.6 Analyzers
+## P1 — v0.6 Analyzers ← siguiente
 
 - FastAPI/Python;
 - Node/Next/React;
@@ -973,27 +967,40 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 - PostgreSQL;
 - Docker;
 - GitHub Actions;
+- analyzer registry;
+- canonical Finding output;
 - luego Go/Quarkus/PHP y resto del catálogo.
 
-## P3 — v0.7 GitHub / CI
+## P2 — v0.7 GitHub / CI / PR
 
-- PRs;
-- checks;
-- releases metadata;
+- GitHub provider;
+- PR read/create/review;
+- checks/CI ingestion;
 - evidence ingestion;
 - task linking;
-- event deduplication.
+- event deduplication;
+- StellarCode sync;
+- release metadata.
 
-## P4 — v0.8/v0.9 Runtime + Deploy
+## P3 — v0.8 Release / Deploy / Rollback
 
-- release/deploy/rollback;
+- release provider flow;
+- staging preflight;
+- deploy;
+- rollback;
+- migration awareness;
+- post-deploy verification/evidence.
+
+## P4 — v0.9 Runtime / Observability / OAuth
+
 - k6;
 - Grafana/Prometheus;
 - Sentry;
 - Docker;
 - k3s/Kubernetes;
 - Cloudflare;
-- OAuth interactive.
+- OAuth interactive;
+- scoped automation identities.
 
 ---
 

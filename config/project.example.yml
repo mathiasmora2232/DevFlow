@@ -1,4 +1,7 @@
-version: 1
+schema_version: 2
+profile: mvp
+providers: {}
+gates: {}
 
 project:
   name: "Example"

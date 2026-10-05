@@ -4,10 +4,11 @@ from pathlib import Path
 from typing import Any
 import yaml
 
+from .config_schema import default_profile_for_stage
 from .utils import slugify
 
 DEFAULT_CONFIG = {
-    "version": 1,
+    "schema_version": 2,
     "project": {
         "name": "Project",
         "slug": "project",
@@ -17,6 +18,9 @@ DEFAULT_CONFIG = {
         "expected_traffic": "unknown",
         "budget_profile": "lean",
     },
+    "profile": "mvp",
+    "providers": {},
+    "gates": {},
     "preferences": {
         "philosophy": "simple-first",
         "prefer_incremental_scaling": True,
@@ -83,6 +87,14 @@ def build_config(name: str, detected: dict, answers: dict) -> dict:
         "expected_traffic": answers.get("traffic", "unknown"),
         "budget_profile": answers.get("budget", "lean"),
     })
+    stage = answers.get("stage", "mvp")
+    cfg["profile"] = {
+        "prototype": "prototype",
+        "mvp": "mvp",
+        "growth": "production",
+        "production": "production",
+        "legacy": "legacy-modernization",
+    }.get(stage, "mvp")
     cfg["stack"]["backend"]["primary"] = answers.get("backend") or detected.get("backend", "none")
     cfg["stack"]["frontend"]["primary"] = answers.get("frontend") or detected.get("frontend", "none")
     cfg["stack"]["database"]["primary"] = answers.get("database") or detected.get("database", "none")

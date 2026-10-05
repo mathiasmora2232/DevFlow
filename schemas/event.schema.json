@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Event",
+  "type": "object",
+  "required": [
+    "event_id",
+    "provider",
+    "event_type",
+    "project_id",
+    "resource_type",
+    "resource_id",
+    "occurred_at",
+    "received_at",
+    "payload_hash"
+  ],
+  "properties": {
+    "event_id": {
+      "type": "string"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "event_type": {
+      "type": "string"
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "resource_type": {
+      "type": "string"
+    },
+    "resource_id": {
+      "type": "string"
+    },
+    "occurred_at": {
+      "type": "string"
+    },
+    "received_at": {
+      "type": "string"
+    },
+    "payload_hash": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array"
+    }
+  }
+}

@@ -11,7 +11,7 @@ Quality gates turn DevFlow recommendations into deterministic policy.
 
 ## Profiles
 
-Planned canonical profiles:
+Implemented canonical profiles:
 
 ```text
 prototype
@@ -28,7 +28,7 @@ Profiles define defaults; projects may override explicitly.
 
 ## Gate types
 
-Initial target:
+Implemented gate types:
 
 ```text
 pull_request
@@ -37,7 +37,7 @@ production
 release
 ```
 
-Future command:
+Current command:
 
 ```bash
 devflow gate production
@@ -96,3 +96,12 @@ Approval = permission to execute consequential action
 ```
 
 Do not merge these concepts.
+
+
+## v0.5 implementation
+
+`devflow gate` evaluates deterministic pull_request, staging, production and release policies.
+
+Current evidence flags include tests, build, rollback, healthcheck and verified CI. Missing mandatory evidence produces `unknown`; explicit failing checks produce `blocked`.
+
+Finding waivers are lifecycle-aware: active accepted-risk/suppressed findings do not block until their waiver expires.

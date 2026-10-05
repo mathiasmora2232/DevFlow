@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Project Config",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "project"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 2
+    },
+    "profile": {
+      "type": "string"
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name",
+        "slug",
+        "stage",
+        "criticality"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slug": {
+          "type": "string",
+          "minLength": 1
+        },
+        "stage": {
+          "enum": [
+            "prototype",
+            "mvp",
+            "growth",
+            "production",
+            "legacy"
+          ]
+        },
+        "criticality": {
+          "enum": [
+            "low",
+            "medium",
+            "high",
+            "critical"
+          ]
+        }
+      }
+    },
+    "providers": {
+      "type": "object"
+    },
+    "gates": {
+      "type": "object"
+    },
+    "stellarcode": {
+      "type": "object"
+    }
+  }
+}

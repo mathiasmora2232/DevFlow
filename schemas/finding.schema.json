@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Finding",
+  "type": "object",
+  "required": [
+    "id",
+    "fingerprint",
+    "project_id",
+    "category",
+    "rule_id",
+    "severity",
+    "confidence",
+    "status",
+    "title",
+    "description"
+  ],
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "fingerprint": {
+      "type": "string",
+      "minLength": 32
+    },
+    "project_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "rule_id": {
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info"
+      ]
+    },
+    "confidence": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "status": {
+      "enum": [
+        "open",
+        "acknowledged",
+        "planned",
+        "in_progress",
+        "fixed",
+        "verified",
+        "closed",
+        "accepted_risk",
+        "false_positive",
+        "suppressed"
+      ]
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "array"
+    }
+  }
+}

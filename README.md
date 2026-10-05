@@ -66,6 +66,9 @@ Un proyecto puede ser sano y no usar tu stack favorito. Eso no debe penalizar su
 | `/doctor` | Diagnosticar entorno, herramientas y espacio libre |
 | `/docs` | Auditar calidad/cobertura de documentación |
 | `/secretos` | Detectar posibles secretos con salida redactada |
+| `/validar` | Validar schema y seguridad de `.devflow.yml` |
+| `/findings` | Consultar y gestionar lifecycle de hallazgos persistentes |
+| `/gate` | Evaluar quality gates deterministas según perfil/evidencia |
 | `/planificar` | Convertir una necesidad en plan ejecutable |
 | `/ejecutar` | Implementar trabajo aprobado |
 | `/auditar` | Auditoría integral con score 0–100 |
@@ -153,11 +156,14 @@ CLI ampliado con Doctor, auditoría de documentación y escaneo de secretos; ada
 ### v0.4
 Integración operacional con StellarCode MCP: identidad real, RBAC por proyecto, Kanban compartido, miembros, roles, decisiones y planificación remote-first.
 
-Las integraciones GitHub/CI/CD, Cloudflare, Kubernetes, Grafana y otros providers siguen en roadmap.
+### v0.5
+Foundations: modelos canónicos, lifecycle/fingerprint de findings, config schema v2, provider capabilities, sync/idempotencia y quality gates/profiles.
+
+Las integraciones profundas por stack, GitHub/CI/CD, Cloudflare, Kubernetes, Grafana y otros providers siguen en roadmap.
 
 Ver `DEVFLOW_ROADMAP.md` y `docs/MCP_ROADMAP.md`.
 
-## CLI ejecutable (v0.4)
+## CLI ejecutable (v0.5)
 
 Instalación local:
 
@@ -178,6 +184,11 @@ devflow /estado
 devflow /doctor
 devflow /docs
 devflow /secretos
+devflow /validar
+devflow config show
+devflow config migrate --check
+devflow /findings
+devflow /gate pull_request
 devflow stellar-bind --project-id 10
 devflow /stellar-status
 devflow /proyectos
@@ -190,7 +201,7 @@ devflow /traza --stellar
 devflow /siguiente
 ```
 
-La v0.2 realiza auditoría estática conservadora. Datos de carga real y salud de producción permanecen `N/A` hasta que existan adaptadores runtime/MCP con evidencia.
+La auditoría estática sigue siendo conservadora y ahora mantiene findings persistentes/reconciliables. Datos de carga real y salud de producción permanecen `N/A` hasta que existan adaptadores runtime/MCP con evidencia.
 
 ## StellarCode MCP
 
@@ -209,4 +220,4 @@ Para continuar DevFlow con Claude Code u otro agente, usar esta secuencia:
 4. `CLAUDE.md` / `AGENTS.md`
 5. `ops/BACKLOG.md`
 
-La siguiente versión recomendada es **v0.5 Foundations**. Los analyzers por stack pasan a v0.6 para evitar escalar sobre contratos todavía implícitos.
+La siguiente versión recomendada es **v0.6 Analyzers**. v0.5 ya dejó los contratos base implementados.

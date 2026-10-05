@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Provider Result",
+  "type": "object",
+  "required": [
+    "schema",
+    "schema_version",
+    "devflow_version",
+    "ok",
+    "provider",
+    "operation",
+    "timestamp"
+  ],
+  "properties": {
+    "schema": {
+      "const": "devflow.provider-result"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "provider": {
+      "type": "string"
+    },
+    "operation": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object"
+    },
+    "evidence": {
+      "type": "array"
+    },
+    "devflow_version": {
+      "type": "string"
+    }
+  }
+}

@@ -4,6 +4,16 @@
 
 ### Added
 
+- DevFlow CLI v0.5 Foundations.
+- Canonical domain contracts and service-account-ready Principal model.
+- Persistent Finding lifecycle with stable fingerprints, reconciliation, regressions and waivers.
+- `/findings` lifecycle command.
+- Config schema v2, `/validar`, `config show` and config migration framework.
+- Provider capability abstraction, normalized errors/results and registry.
+- Sync authority/conflict model, event contract and idempotency store.
+- Deterministic quality gates/profiles through `/gate`.
+- Versioned JSON schemas for machine-readable contracts.
+
 - DevFlow CLI v0.4.
 - StellarCode MCP integration with secure project binding.
 - `/stellar-status`, `/kanban`, `/siguiente`, `stellar-bind`, `/planificar --stellar` and `/traza --stellar`.

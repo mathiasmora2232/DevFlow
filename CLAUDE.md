@@ -58,20 +58,20 @@ Conversation memory is never a source of truth.
 
 ## Current recommended next version
 
-The next architectural milestone is **v0.5 Foundations**, not a large analyzer expansion.
+The next milestone is **v0.6 Analyzers**.
 
-Build, in order where practical:
+v0.5 Foundations is implemented and provides:
 
-1. typed/canonical domain contracts;
+1. canonical domain contracts;
 2. Finding model + stable fingerprint + reconciliation;
-3. config schema/validate/migrations;
-4. provider capability interface;
-5. sync/conflict/idempotency primitives;
+3. config schema/validation/migrations;
+4. provider capability interface and registry;
+5. sync/conflict/idempotency/event primitives;
 6. quality-gate engine + profiles;
-7. principal model ready for users and automation identities;
-8. tests and schema/version metadata.
+7. user/service-account principal model;
+8. versioned machine-readable contracts.
 
-Only after the foundation is stable should v0.6 scale stack-specific analyzers.
+For v0.6, implement analyzers through the v0.5 contracts. Every analyzer must emit canonical findings with stable fingerprints; do not bypass the provider/gate/config abstractions.
 
 ## Production
 
