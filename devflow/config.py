@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 import yaml
 
+from .config_schema import default_profile_for_stage
 from .utils import slugify
 
 DEFAULT_CONFIG = {
