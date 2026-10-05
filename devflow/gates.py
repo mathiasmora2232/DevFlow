@@ -75,6 +75,8 @@ class GateCheck:
 class GateResult:
     gate: str
     result: str
+    schema: str = "devflow.gate-result"
+    schema_version: int = 1
     checks: list[dict[str, Any]] = field(default_factory=list)
     evidence: list[dict[str, Any]] = field(default_factory=list)
     missing_evidence: list[str] = field(default_factory=list)
