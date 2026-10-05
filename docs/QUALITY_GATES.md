@@ -11,7 +11,7 @@ Quality gates turn DevFlow recommendations into deterministic policy.
 
 ## Profiles
 
-Planned canonical profiles:
+Implemented canonical profiles:
 
 ```text
 prototype
@@ -28,7 +28,7 @@ Profiles define defaults; projects may override explicitly.
 
 ## Gate types
 
-Initial target:
+Implemented gate types:
 
 ```text
 pull_request
@@ -37,7 +37,7 @@ production
 release
 ```
 
-Future command:
+Current command:
 
 ```bash
 devflow gate production
