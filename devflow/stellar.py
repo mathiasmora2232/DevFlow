@@ -15,11 +15,11 @@ class StellarError(RuntimeError):
     pass
 
 
-def stellar_config(root: Path, require_project: bool = True) -> dict[str, Any]:
+def stellar_config(root: Path, require_project: bool = True, allow_disabled: bool = False) -> dict[str, Any]:
     cfg = load_config(root)
     stellar = cfg.get("stellarcode", {}) if cfg else {}
-    if not stellar.get("enabled"):
-        raise StellarError("StellarCode integration is disabled. Run `devflow stellar-bind --project-id <id>`.")
+    if not stellar.get("enabled") and not allow_disabled:
+        raise StellarError("StellarCode integration is disabled. Run `devflow stellar-bind --project-id <id>` or `devflow stellar-adopt`.")
     if not stellar.get("mcp_url"):
         raise StellarError("stellarcode.mcp_url is missing in .devflow.yml")
     if require_project and not stellar.get("project_id"):
@@ -79,8 +79,8 @@ async def _call_tool_async(url: str, token: str, tool: str, arguments: dict[str,
     return {}
 
 
-def call_tool(root: Path, tool: str, arguments: dict[str, Any] | None = None, require_project: bool = True) -> dict[str, Any]:
-    stellar = stellar_config(root, require_project=require_project)
+def call_tool(root: Path, tool: str, arguments: dict[str, Any] | None = None, require_project: bool = True, allow_disabled: bool = False) -> dict[str, Any]:
+    stellar = stellar_config(root, require_project=require_project, allow_disabled=allow_disabled)
     token = stellar_token(stellar)
     client_name = stellar.get("client_name") or "devflow-cli"
     return asyncio.run(_call_tool_async(stellar["mcp_url"], token, tool, arguments or {}, client_name))
@@ -246,6 +246,7 @@ def adopt_project(
             "project_type": project.get("type") or "unknown",
         },
         require_project=False,
+        allow_disabled=True,
     )
     remote = result.get("project") or {}
     project_id = remote.get("id") or result.get("project_id")
