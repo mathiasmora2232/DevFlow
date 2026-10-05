@@ -1,5 +1,7 @@
 # DevFlow Core — Implementation Status
 
+> Resumen corto. Para alcance global, fases, matriz de capacidades y Definition of Done, ver [`DEVFLOW_ROADMAP.md`](./DEVFLOW_ROADMAP.md).
+
 ## v0.4 implemented
 
 - 25 canonical skills.
@@ -36,7 +38,7 @@
 - Grafana/Prometheus ingestion.
 - GitHub Actions live state ingestion.
 - Cloudflare/Kubernetes live operations.
-- MCP server.
+- Additional live provider/MCP adapters beyond StellarCode.
 - Language-specific dead-code analyzers.
 - Production deploy automation.
 
