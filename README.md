@@ -205,6 +205,9 @@ La auditoría estática sigue siendo conservadora y ahora mantiene findings pers
 
 ## StellarCode MCP
 
+StellarCode Studio es el **hub operacional obligatorio** para proyectos gestionados por DevFlow. Los análisis locales pueden ejecutarse offline, pero su estado queda pendiente de sincronización hasta volcar stack, auditorías, findings, infraestructura/config metadata, fases, backlog, evidencia y tiempo trabajado al MCP.
+
+
 DevFlow v0.4+ puede usar `https://api.stellarcodelabs.lat/mcp` como capa operacional compartida. El JWT del usuario se obtiene desde la variable de entorno `STELLARCODE_TOKEN`; nunca se persiste en `.devflow.yml`.
 
 La seguridad real vive en StellarCode: usuario autenticado + membresía del proyecto + rol + permiso atómico. Git continúa siendo la fuente de evidencia técnica y StellarCode el estado vivo del backlog/Kanban.
@@ -216,7 +219,7 @@ Para continuar DevFlow con Claude Code u otro agente, usar esta secuencia:
 
 1. `DEVFLOW_ROADMAP.md`
 2. `docs/CLAUDE_HANDOFF.md`
-3. contratos en `docs/DOMAIN_MODEL.md`, `docs/FINDING_LIFECYCLE.md`, `docs/PROVIDER_CONTRACT.md`, `docs/SYNC_MODEL.md`, `docs/CONFIG_AND_VERSIONING.md` y `docs/QUALITY_GATES.md`
+3. contratos en `docs/DOMAIN_MODEL.md`, `docs/PROJECT_DISCOVERY.md`, `docs/STELLARCODE_HUB_CONTRACT.md`, `docs/FINDING_LIFECYCLE.md`, `docs/PROVIDER_CONTRACT.md`, `docs/SYNC_MODEL.md`, `docs/CONFIG_AND_VERSIONING.md` y `docs/QUALITY_GATES.md`
 4. `CLAUDE.md` / `AGENTS.md`
 5. `ops/BACKLOG.md`
 
