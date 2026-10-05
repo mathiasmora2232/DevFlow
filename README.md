@@ -6,6 +6,8 @@ Su objetivo no es imponer un framework ni reemplazar GitHub/Jira/CI/CD. Su objet
 
 Pensado para reutilizarse en SmartAhorra, SmartISP, Sonora y futuros proyectos.
 
+> **Estado global:** ver [`DEVFLOW_ROADMAP.md`](./DEVFLOW_ROADMAP.md). Ese archivo concentra lo implementado, lo parcial, lo pendiente, la matriz CLI/Skill/MCP/runtime y el camino hasta v1.0.
+
 ## Idea central
 
 ```text
@@ -149,11 +151,13 @@ CLI para inicialización, auditoría estática y reportes.
 CLI ampliado con Doctor, auditoría de documentación y escaneo de secretos; adaptadores Codex / Claude Code continúan evolucionando.
 
 ### v0.4
-MCP opcional para GitHub, CI/CD, Cloudflare, Kubernetes, Grafana y otros sistemas vivos.
+Integración operacional con StellarCode MCP: identidad real, RBAC por proyecto, Kanban compartido, miembros, roles, decisiones y planificación remote-first.
 
-Ver `docs/MCP_ROADMAP.md`.
+Las integraciones GitHub/CI/CD, Cloudflare, Kubernetes, Grafana y otros providers siguen en roadmap.
 
-## CLI ejecutable (v0.3)
+Ver `DEVFLOW_ROADMAP.md` y `docs/MCP_ROADMAP.md`.
+
+## CLI ejecutable (v0.4)
 
 Instalación local:
 
