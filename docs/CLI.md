@@ -114,3 +114,37 @@ devflow /siguiente
 ```
 
 El sync de backlog es `remote_first`: DevFlow crea/actualiza primero StellarCode y luego persiste la traza local. El token nunca se escribe en `.devflow.yml`.
+
+
+## v0.5 Foundations
+
+### Config
+
+```bash
+devflow /validar
+devflow config show
+devflow config migrate --check
+devflow config migrate
+```
+
+La migración v1→v2 crea backup local y nunca mueve credenciales crudas a YAML.
+
+### Findings
+
+```bash
+devflow /findings
+devflow findings list --status open
+devflow findings status --id FND-... --status acknowledged
+devflow findings status --id FND-... --status accepted_risk --reason "temporary" --approved-by "owner" --expires-at 2026-12-01
+```
+
+`/auditar` reconcilia automáticamente findings contra `ops/findings.json`.
+
+### Quality gates
+
+```bash
+devflow /gate pull_request
+devflow /gate production --tests --build --rollback --healthcheck --verified-ci
+```
+
+Un resultado `unknown` significa que falta evidencia obligatoria; no se trata como `pass`.
