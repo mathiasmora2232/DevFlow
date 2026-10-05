@@ -336,3 +336,58 @@ Offline mode must not be confused with a fully managed project state.
 ## 13. Rule
 
 If a piece of information is important enough to influence planning, health, scope, permissions, time or delivery, it should have a structured StellarCode representation instead of living only in a Markdown report.
+
+
+## Studio application requirements
+
+The MCP contract is only half of the system. StellarCode Studio must expose matching data models and UI modules.
+
+Required Studio modules:
+
+- Project Onboarding;
+- Discovery history;
+- Current Stack;
+- Target Stack;
+- Architecture;
+- Infrastructure;
+- Configuration metadata;
+- Audits;
+- Findings;
+- Project Health;
+- Migration / Refactor Plan;
+- Objectives / Scope;
+- Phases;
+- Time Tracking;
+- Evidence;
+- Risks;
+- Decisions;
+- Members;
+- Activity.
+
+Project overview should summarize at least:
+
+```text
+Project Health
+Stack Fit
+Evidence Confidence
+Current Phase
+Open Findings
+Critical Findings
+Tasks
+Blocked Work
+Time Today
+Time This Week
+Last Audit
+Last Discovery
+Environment Health
+Current Release
+```
+
+The detailed implementation backlog for StellarCode Studio lives in the StellarCode repository:
+
+```text
+docs/DEVFLOW_STUDIO_EVOLUTION.md
+docs/MCP_V3_DEVFLOW_HUB.md
+```
+
+DevFlow changes that require new remote data must account for the corresponding Studio model/UI/MCP capability. Do not implement a new DevFlow data flow as a local-only dead end when the information is intended to drive project operations.
