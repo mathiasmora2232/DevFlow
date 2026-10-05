@@ -1,0 +1,137 @@
+version: 1
+
+grading:
+  excellent: [90, 100]
+  good: [80, 89]
+  acceptable: [70, 79]
+  risky: [60, 69]
+  fragile: [40, 59]
+  critical: [0, 39]
+
+categories:
+  security:
+    weight: 16
+    dimensions:
+      - secrets
+      - authentication
+      - authorization
+      - input_validation
+      - injection
+      - csrf_cors_sessions
+      - dependencies
+      - sensitive_logging
+      - infrastructure_exposure
+
+  architecture:
+    weight: 10
+    dimensions:
+      - boundaries
+      - coupling
+      - cohesion
+      - dependency_direction
+      - proportionality
+      - scalability_fit
+
+  code_quality:
+    weight: 10
+    dimensions:
+      - readability
+      - complexity
+      - consistency
+      - error_handling
+      - typing
+      - linting
+
+  maintainability:
+    weight: 8
+    dimensions:
+      - modularity
+      - change_cost
+      - conventions
+      - documentation
+      - ownership
+
+  duplication:
+    weight: 5
+    dimensions: [duplicate_logic, duplicate_components, copy_paste_patterns]
+
+  dead_code:
+    weight: 4
+    dimensions: [unused_files, unused_exports, unreachable_code, stale_features]
+
+  testing:
+    weight: 10
+    dimensions:
+      - unit
+      - integration
+      - e2e
+      - critical_paths
+      - regression_protection
+
+  performance:
+    weight: 8
+    dimensions:
+      - latency
+      - frontend_bundle
+      - query_efficiency
+      - caching
+      - resource_usage
+
+  server_load:
+    weight: 5
+    evidence_required: runtime
+    dimensions:
+      - cpu
+      - memory
+      - concurrency
+      - saturation
+      - error_rate
+      - throughput
+
+  seo:
+    weight: 5
+    applies_to: [frontend, fullstack]
+    dimensions:
+      - metadata
+      - crawlability
+      - sitemap
+      - robots
+      - canonical
+      - structured_data
+      - semantics
+      - web_vitals
+
+  accessibility:
+    weight: 3
+    applies_to: [frontend, fullstack]
+    dimensions: [semantic_html, keyboard, contrast, labels, aria]
+
+  database:
+    weight: 5
+    dimensions: [schema, indexes, constraints, migrations, query_patterns, permissions]
+
+  devops:
+    weight: 4
+    dimensions: [ci, reproducibility, deploy_strategy, rollback, environment_parity]
+
+  observability:
+    weight: 3
+    dimensions: [logs, metrics, traces, alerts, health_checks]
+
+  resilience:
+    weight: 2
+    dimensions: [timeouts, retries, circuit_breaking, graceful_failure, backups]
+
+  dependencies:
+    weight: 1
+    dimensions: [freshness, vulnerabilities, abandoned_packages]
+
+  documentation:
+    weight: 1
+    dimensions: [readme, runbook, architecture, setup]
+
+rules:
+  renormalize_na: true
+  no_evidence_no_score: true
+  security_critical_cap: 49
+  unverified_production_health_must_be_unknown: true

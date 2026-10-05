@@ -1,0 +1,73 @@
+version: 1
+
+project:
+  name: "Example"
+  slug: "example"
+  stage: "mvp"          # prototype | mvp | growth | production | legacy
+  type: "fullstack"     # frontend | backend | fullstack | api | mobile | infra | monorepo
+  criticality: "medium" # low | medium | high | critical
+  expected_traffic: "unknown"
+  budget_profile: "lean"
+
+preferences:
+  philosophy: "simple-first"
+  prefer_incremental_scaling: true
+  avoid_premature_microservices: true
+  avoid_premature_kubernetes: true
+
+stack:
+  backend:
+    primary: "fastapi"
+    alternatives: ["go", "nodejs", "quarkus", "php"]
+  frontend:
+    primary: "nextjs"
+    alternatives: ["angular", "react", "javascript"]
+    styling: ["tailwind"]
+  database:
+    primary: "postgresql"
+    alternatives: ["mariadb", "sqlite"]
+  infrastructure:
+    os: "ubuntu-server"
+    container: "docker"
+    edge: "cloudflare"
+    orchestration: "none"
+  ci_cd:
+    provider: "github-actions"
+  observability:
+    metrics: ["grafana"]
+    load_testing: ["k6"]
+
+commands:
+  install: ""
+  lint: ""
+  format_check: ""
+  typecheck: ""
+  test: ""
+  test_integration: ""
+  build: ""
+  security_scan: ""
+  dead_code_scan: ""
+  duplication_scan: ""
+  load_test: ""
+
+audit:
+  profile: "fullstack"
+  minimum_confidence_to_publish_score: 50
+  require_evidence: true
+  allow_na: true
+
+approvals:
+  create_remote_branch: false
+  create_pr: false
+  staging_deploy: false
+  production_deploy: true
+  production_load_test: true
+  destructive_db_change: true
+  force_push: true
+  dns_change: true
+  shared_infrastructure_change: true
+
+trace:
+  enabled: true
+  timezone: "America/Guayaquil"
+  id_prefix: "DEV"

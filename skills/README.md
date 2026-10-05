@@ -1,0 +1,27 @@
+# Skills Index
+
+- [`router`](./router/SKILL.md) — Enruta comandos e intención hacia el skill canónico correcto.
+- [`nuevo-proyecto`](./nuevo-proyecto/SKILL.md) — Inicializa un proyecto nuevo o adopta DevFlow en uno existente mediante un wizard de arquitectura y stack.
+- [`estado-proyecto`](./estado-proyecto/SKILL.md) — Resume el estado técnico y operativo actual con evidencia.
+- [`planificar`](./planificar/SKILL.md) — Convierte una necesidad en un plan ejecutable y proporcional.
+- [`ejecutar`](./ejecutar/SKILL.md) — Implementa un trabajo aprobado siguiendo el plan y calidad configurada.
+- [`auditar-proyecto`](./auditar-proyecto/SKILL.md) — Ejecuta auditoría integral de un proyecto y genera scores con evidencia.
+- [`puntuar-proyecto`](./puntuar-proyecto/SKILL.md) — Calcula o recalcula Project Health, Stack Fit y Evidence Confidence.
+- [`revisar-stack`](./revisar-stack/SKILL.md) — Evalúa adecuación técnica y alineación del stack sin confundir preferencia con calidad.
+- [`migrar-stack`](./migrar-stack/SKILL.md) — Diseña una migración de stack segura, incremental y justificable.
+- [`revisar-seguridad`](./revisar-seguridad/SKILL.md) — Revisa seguridad de código, dependencias, configuración e infraestructura.
+- [`revisar-seo`](./revisar-seo/SKILL.md) — Audita SEO técnico y preparación para indexación de aplicaciones web.
+- [`revisar-performance`](./revisar-performance/SKILL.md) — Evalúa rendimiento con separación explícita entre análisis estático y medición runtime.
+- [`calidad-codigo`](./calidad-codigo/SKILL.md) — Analiza legibilidad, complejidad, duplicación, consistencia, errores y mantenibilidad.
+- [`codigo-muerto`](./codigo-muerto/SKILL.md) — Detecta código posiblemente no utilizado y prepara eliminación segura.
+- [`deuda-tecnica`](./deuda-tecnica/SKILL.md) — Inventaría y prioriza deuda técnica por impacto, riesgo, esfuerzo y frecuencia de cambio.
+- [`preparar-pr`](./preparar-pr/SKILL.md) — Prepara una rama para PR con validación técnica, seguridad y trazabilidad.
+- [`revisar-pr`](./revisar-pr/SKILL.md) — Revisa PR por correctitud, seguridad, mantenibilidad, pruebas y operación.
+- [`release`](./release/SKILL.md) — Prepara una release con versión, changelog, quality gates y readiness.
+- [`deploy`](./deploy/SKILL.md) — Prepara o ejecuta un despliegue respetando ambientes y approval gates.
+- [`verificar-produccion`](./verificar-produccion/SKILL.md) — Comprueba que la versión desplegada funciona realmente en producción.
+- [`incidente`](./incidente/SKILL.md) — Gestiona un incidente priorizando estabilización, evidencia y mínimo blast radius.
+- [`postmortem`](./postmortem/SKILL.md) — Genera postmortem técnico sin buscar culpables.
+- [`sincronizar-traza`](./sincronizar-traza/SKILL.md) — Sincroniza TRACE con evidencia real de Git, PR, CI y deploy.
+- [`changelog`](./changelog/SKILL.md) — Mantiene changelog de cambios visibles/relevantes de producto.
+- [`siguiente-accion`](./siguiente-accion/SKILL.md) — Determina la próxima acción de mayor valor a partir del estado del proyecto.

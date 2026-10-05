@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DevFlow Audit Result",
+  "type": "object",
+  "required": [
+    "project_health_score",
+    "stack_fit_score",
+    "evidence_confidence",
+    "categories"
+  ],
+  "properties": {
+    "project_health_score": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "stack_fit_score": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 100
+    },
+    "evidence_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "categories": {
+      "type": "array"
+    },
+    "findings": {
+      "type": "array"
+    },
+    "unknowns": {
+      "type": "array"
+    }
+  }
+}

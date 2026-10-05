@@ -1,0 +1,211 @@
+from __future__ import annotations
+
+import argparse
+import json
+import shutil
+import sys
+from datetime import datetime
+from pathlib import Path
+import yaml
+
+from . import __version__
+from .audit import audit_project
+from .config import build_config, load_config, save_config
+from .detector import detect_stack
+from .report import audit_markdown, stack_review_markdown
+from .scoring import weighted_score, evidence_confidence
+from .stackfit import evaluate_stack_fit
+from .trace import ensure_ops, sync_trace, next_work_id, add_work
+from .utils import slugify
+
+ALIASES = {
+    "/nuevo-proyecto": "nuevo-proyecto", "init": "nuevo-proyecto",
+    "/auditar": "auditar", "audit": "auditar",
+    "/puntuar": "puntuar", "score": "puntuar",
+    "/revisar-stack": "revisar-stack", "stack-review": "revisar-stack",
+    "/planificar": "planificar", "plan": "planificar",
+    "/traza": "traza", "trace": "traza",
+    "/estado": "estado", "status": "estado",
+    "/detectar": "detectar", "detect": "detectar",
+}
+
+
+def _target(value: str) -> Path:
+    return Path(value).expanduser().resolve()
+
+
+def _ask(label: str, default: str, choices: list[str] | None = None) -> str:
+    options = f" [{'/'.join(choices)}]" if choices else ""
+    raw = input(f"{label}{options} ({default}): ").strip()
+    value = raw or default
+    if choices and value not in choices:
+        print(f"Valor no reconocido; usando {default}.")
+        return default
+    return value
+
+
+def cmd_init(args) -> int:
+    root = _target(args.target); root.mkdir(parents=True, exist_ok=True)
+    detected = detect_stack(root)
+    name = args.name or root.name
+    if args.non_interactive:
+        answers = {
+            "stage": args.stage or "mvp", "type": args.type or detected.get("project_type", "fullstack"),
+            "criticality": args.criticality or "medium", "traffic": args.traffic or "unknown",
+            "budget": args.budget or "lean", "backend": args.backend or detected.get("backend", "none"),
+            "frontend": args.frontend or detected.get("frontend", "none"), "database": args.database or detected.get("database", "none"),
+            "edge": args.edge, "orchestration": args.orchestration,
+        }
+    else:
+        print("\nDevFlow /nuevo-proyecto — usa Enter para aceptar la detección/default.\n")
+        name = _ask("Nombre", name)
+        answers = {
+            "stage": _ask("Etapa", "mvp", ["prototype","mvp","growth","production","legacy"]),
+            "type": _ask("Tipo", detected.get("project_type", "fullstack"), ["frontend","backend","fullstack","api","mobile","infra","monorepo","unknown"]),
+            "criticality": _ask("Criticidad", "medium", ["low","medium","high","critical"]),
+            "traffic": _ask("Tráfico esperado", "unknown"),
+            "budget": _ask("Perfil de presupuesto", "lean", ["lean","balanced","flexible"]),
+            "backend": _ask("Backend", detected.get("backend", "none"), ["fastapi","go","nodejs","quarkus","php","none","other"]),
+            "frontend": _ask("Frontend", detected.get("frontend", "none"), ["angular","nextjs","react","javascript","none","other"]),
+            "database": _ask("Base de datos", detected.get("database", "none"), ["postgresql","mariadb","sqlite","none","other"]),
+            "edge": _ask("Edge", "cloudflare" if "cloudflare" in detected.get("infra",[]) else "none", ["cloudflare","none","other"]),
+            "orchestration": _ask("Orquestación", "k3s" if "k3s" in detected.get("infra",[]) else "kubernetes" if "kubernetes" in detected.get("infra",[]) else "none", ["none","k3s","kubernetes","other"]),
+        }
+    cfg = build_config(name, detected, answers)
+    path = root / ".devflow.yml"
+    if path.exists() and not args.force:
+        print(f"ERROR: {path} ya existe. Usa --force solo si deseas reemplazarlo.")
+        return 2
+    save_config(root, cfg, overwrite=args.force)
+    ensure_ops(root)
+    sync_trace(root)
+    print(f"DevFlow inicializado en {root}")
+    print(f"Stack detectado: backend={detected['backend']} frontend={detected['frontend']} db={detected['database']}")
+    if answers.get("stage") in {"prototype","mvp"} and answers.get("budget") == "lean" and answers.get("orchestration") in {"kubernetes","k3s"}:
+        print("ADVERTENCIA: orquestación Kubernetes/k3s en MVP lean requiere justificación de carga/operación.")
+    return 0
+
+
+def _require_config(root: Path) -> dict:
+    cfg = load_config(root)
+    if not cfg:
+        raise SystemExit("No existe .devflow.yml. Ejecuta `devflow /nuevo-proyecto` primero.")
+    return cfg
+
+
+def cmd_detect(args) -> int:
+    root = _target(args.target)
+    print(yaml.safe_dump(detect_stack(root), sort_keys=False, allow_unicode=True))
+    return 0
+
+
+def cmd_audit(args) -> int:
+    root = _target(args.target); cfg = _require_config(root)
+    result = audit_project(root, cfg)
+    reports = root / "ops" / "reports"; reports.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
+    json_path = reports / f"audit-{stamp}.json"
+    md_path = reports / f"audit-{stamp}.md"
+    json_path.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+    md_path.write_text(audit_markdown(result), encoding="utf-8")
+    (reports / "latest.json").write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+    (reports / "latest.md").write_text(audit_markdown(result), encoding="utf-8")
+    sync_trace(root)
+    print(f"Health: {result['project_health_score']}/100")
+    print(f"Stack Fit: {result['stack_fit_score']}/100")
+    print(f"Evidence Confidence: {result['evidence_confidence']}/100")
+    print(f"Report: {md_path}")
+    return 0
+
+
+def cmd_score(args) -> int:
+    root = _target(args.target); _require_config(root)
+    latest = root / "ops" / "reports" / "latest.json"
+    if not latest.exists() or args.refresh:
+        return cmd_audit(argparse.Namespace(target=str(root)))
+    result = json.loads(latest.read_text(encoding="utf-8"))
+    print(json.dumps({
+        "project_health_score": result.get("project_health_score"),
+        "stack_fit_score": result.get("stack_fit_score"),
+        "evidence_confidence": result.get("evidence_confidence"),
+        "unknowns": result.get("unknowns", []),
+    }, indent=2, ensure_ascii=False))
+    return 0
+
+
+def cmd_stack(args) -> int:
+    root = _target(args.target); cfg = _require_config(root)
+    detected = detect_stack(root); fit = evaluate_stack_fit(detected, cfg)
+    reports = root / "ops" / "reports"; reports.mkdir(parents=True, exist_ok=True)
+    out = reports / "stack-review.md"
+    out.write_text(stack_review_markdown(detected, fit), encoding="utf-8")
+    print(f"Stack Fit: {fit['score']}/100 — {fit['recommendation']}")
+    for w in fit["warnings"]: print(f"WARN: {w}")
+    print(f"Report: {out}")
+    return 0
+
+
+def cmd_plan(args) -> int:
+    root = _target(args.target); cfg = _require_config(root)
+    prefix = cfg.get("trace", {}).get("id_prefix", "DEV")
+    wid = next_work_id(root, prefix)
+    acceptance = args.acceptance or []
+    add_work(root, wid, args.title, args.type, args.priority, args.description or args.title, acceptance)
+    print(f"Created {wid}: {args.title}")
+    return 0
+
+
+def cmd_trace(args) -> int:
+    root = _target(args.target); _require_config(root)
+    info = sync_trace(root, args.environment)
+    print(f"Trace synchronized: branch={info['branch']} revision={info['revision']} dirty={info['dirty']}")
+    return 0
+
+
+def cmd_status(args) -> int:
+    root = _target(args.target); cfg = _require_config(root)
+    detected = detect_stack(root)
+    latest = root / "ops" / "reports" / "latest.json"
+    audit = json.loads(latest.read_text(encoding="utf-8")) if latest.exists() else None
+    from .utils import git_info
+    git = git_info(root)
+    print(f"Project: {cfg.get('project',{}).get('name', root.name)}")
+    print(f"Git: {git['branch']} @ {git['revision']} dirty={git['dirty']}")
+    print(f"Detected: backend={detected['backend']} frontend={detected['frontend']} db={detected['database']}")
+    if audit:
+        print(f"Health={audit.get('project_health_score')} StackFit={audit.get('stack_fit_score')} Confidence={audit.get('evidence_confidence')}")
+    else:
+        print("Audit: not generated. Run `devflow /auditar`.")
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    p = argparse.ArgumentParser(prog="devflow", description="DevFlow Core CLI")
+    p.add_argument("--version", action="version", version=f"devflow {__version__}")
+    sub = p.add_subparsers(dest="command", required=True)
+
+    init = sub.add_parser("nuevo-proyecto", help="Inicializa/adopta DevFlow")
+    init.add_argument("--target", default="."); init.add_argument("--name"); init.add_argument("--force", action="store_true")
+    init.add_argument("--non-interactive", action="store_true")
+    init.add_argument("--stage"); init.add_argument("--type"); init.add_argument("--criticality"); init.add_argument("--traffic"); init.add_argument("--budget")
+    init.add_argument("--backend"); init.add_argument("--frontend"); init.add_argument("--database"); init.add_argument("--edge"); init.add_argument("--orchestration")
+    init.set_defaults(func=cmd_init)
+
+    d = sub.add_parser("detectar", help="Detecta stack"); d.add_argument("--target", default="."); d.set_defaults(func=cmd_detect)
+    a = sub.add_parser("auditar", help="Auditoría estática integral"); a.add_argument("--target", default="."); a.set_defaults(func=cmd_audit)
+    s = sub.add_parser("puntuar", help="Muestra score actual"); s.add_argument("--target", default="."); s.add_argument("--refresh", action="store_true"); s.set_defaults(func=cmd_score)
+    sr = sub.add_parser("revisar-stack", help="Evalúa Stack Fit"); sr.add_argument("--target", default="."); sr.set_defaults(func=cmd_stack)
+    pl = sub.add_parser("planificar", help="Crea work item trazable"); pl.add_argument("title"); pl.add_argument("--target", default="."); pl.add_argument("--type", default="feature"); pl.add_argument("--priority", default="medium"); pl.add_argument("--description", default=""); pl.add_argument("--acceptance", action="append"); pl.set_defaults(func=cmd_plan)
+    tr = sub.add_parser("traza", help="Sincroniza traza con Git"); tr.add_argument("--target", default="."); tr.add_argument("--environment", default="local"); tr.set_defaults(func=cmd_trace)
+    st = sub.add_parser("estado", help="Resumen de estado"); st.add_argument("--target", default="."); st.set_defaults(func=cmd_status)
+    return p
+
+
+def main(argv=None) -> int:
+    argv = list(sys.argv[1:] if argv is None else argv)
+    if argv:
+        argv[0] = ALIASES.get(argv[0], argv[0].lstrip("/") if argv[0].startswith("/") else argv[0])
+        argv[0] = ALIASES.get(argv[0], argv[0])
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    return int(args.func(args))
