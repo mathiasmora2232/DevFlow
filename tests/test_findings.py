@@ -91,3 +91,15 @@ def test_waiver_requires_reason_and_approver(tmp_path: Path):
         update_finding_status(tmp_path, finding["id"], "accepted_risk")
     with pytest.raises(ValueError, match="approved_by"):
         update_finding_status(tmp_path, finding["id"], "accepted_risk", "temporary")
+
+
+def test_corrupt_finding_history_fails_closed(tmp_path: Path):
+    import pytest
+    from devflow.findings import load_findings
+
+    path = tmp_path / "ops" / "findings.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{broken", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="Unable to read finding history"):
+        load_findings(tmp_path)

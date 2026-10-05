@@ -84,8 +84,8 @@ class IdempotencyStore:
             if isinstance(data, dict) and isinstance(data.get("entries"), dict):
                 return data["entries"]
             return data if isinstance(data, dict) else {}
-        except (json.JSONDecodeError, OSError):
-            return {}
+        except (json.JSONDecodeError, OSError) as exc:
+            raise ValueError(f"Unable to read idempotency store {self.path}: {exc}") from exc
 
     def seen(self, key: str) -> bool:
         return key in self._load()
@@ -102,7 +102,9 @@ class IdempotencyStore:
             "devflow_version": __version__,
             "entries": data,
         }
-        self.path.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp = self.path.with_suffix(self.path.suffix + ".tmp")
+        tmp.write_text(json.dumps(payload, indent=2, ensure_ascii=False), encoding="utf-8")
+        tmp.replace(self.path)
         return True
 
 

@@ -205,7 +205,7 @@ La auditoría estática sigue siendo conservadora y ahora mantiene findings pers
 
 ## StellarCode MCP
 
-DevFlow v0.4 puede usar `https://api.stellarcodelabs.lat/mcp` como capa operacional compartida. El JWT del usuario se obtiene desde la variable de entorno `STELLARCODE_TOKEN`; nunca se persiste en `.devflow.yml`.
+DevFlow v0.4+ puede usar `https://api.stellarcodelabs.lat/mcp` como capa operacional compartida. El JWT del usuario se obtiene desde la variable de entorno `STELLARCODE_TOKEN`; nunca se persiste en `.devflow.yml`.
 
 La seguridad real vive en StellarCode: usuario autenticado + membresía del proyecto + rol + permiso atómico. Git continúa siendo la fuente de evidencia técnica y StellarCode el estado vivo del backlog/Kanban.
 

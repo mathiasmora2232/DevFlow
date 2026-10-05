@@ -53,3 +53,13 @@ def test_idempotency_store_is_versioned(tmp_path: Path):
     assert payload["schema"] == "devflow.idempotency"
     assert payload["schema_version"] == 1
     assert "evt-1" in payload["entries"]
+
+
+def test_corrupt_idempotency_store_fails_closed(tmp_path: Path):
+    import pytest
+    path = tmp_path / "ops" / "idempotency.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("{broken", encoding="utf-8")
+    store = IdempotencyStore(tmp_path)
+    with pytest.raises(ValueError, match="Unable to read idempotency store"):
+        store.seen("evt-1")
