@@ -136,6 +136,11 @@ DevFlow debe:
 13. Git es evidencia técnica; StellarCode es estado operacional.
 14. Backlog remoto usa estrategia `remote_first`.
 15. Una auditoría no crea decenas de tareas automáticamente sin aprobación.
+16. Findings tienen identidad estable; no se recrean como problemas nuevos en cada scan.
+17. Scores, gates y approvals son conceptos separados.
+18. Project y Repository no son sinónimos; un proyecto puede abarcar múltiples repos.
+19. Integraciones escribibles deben ser idempotentes y registrar request/event identity.
+20. Config, findings, sync results y provider outputs deben evolucionar con schema/version explícita.
 
 ---
 
@@ -166,8 +171,14 @@ DevFlow debe:
 | Runtime observability | ❌ Pendiente | requiere adapters |
 | Production verification | ❌ Pendiente | requiere runtime evidence |
 | Deploy automation | ❌ Pendiente | approval-gated |
-| Deep framework analyzers | 🚧 Parcial | arquitectura pendiente |
-| GitHub/CI ingestion | ❌ Pendiente | fase posterior |
+| Domain contracts | 📐 Documentado | implementar en v0.5 |
+| Finding lifecycle/fingerprints | 📐 Documentado | implementar en v0.5 |
+| Config schema/migrations | 📐 Documentado | implementar en v0.5 |
+| Provider capability layer | 📐 Documentado | implementar en v0.5 |
+| Sync/conflict/idempotency | 📐 Documentado | implementar en v0.5 |
+| Quality gates/profiles | 📐 Documentado | implementar en v0.5 |
+| Deep framework analyzers | 📐 Diseñado | v0.6 |
+| GitHub/CI ingestion | ❌ Pendiente | v0.7 |
 | Cost analysis | ❌ Pendiente | futuro |
 | Auto-remediation | ❌ Pendiente | futuro |
 
@@ -491,56 +502,73 @@ Pendiente para completar rollout:
 - activar writes de forma controlada;
 - retirar shared secret legacy.
 
-## v0.5 — Framework analyzers
+## v0.5 — Foundations
 
-Objetivo: hacer que `/auditar` pase de heurística genérica a análisis específico por stack.
+Objetivo: estabilizar los contratos internos antes de multiplicar analyzers/providers.
 
-### Backend
+Entregar:
 
-- FastAPI;
-- Go;
-- Node.js;
-- Quarkus;
-- PHP.
+- modelos canónicos para Project, Repository, WorkItem, Finding, Evidence, Decision, Risk, Release, Deployment, Environment y Principal;
+- Finding lifecycle;
+- fingerprint estable;
+- reconciliación entre auditorías;
+- config schema formal;
+- `devflow validate`;
+- framework de migración de config;
+- provider/capability contract;
+- sync results + conflictos + idempotencia;
+- quality gate engine;
+- perfiles operativos;
+- principal model compatible con usuarios y automation identities;
+- schema/version metadata en outputs críticos.
 
-### Frontend
+Documentos canónicos:
 
-- Angular;
-- Next.js;
-- React;
-- JavaScript/TypeScript.
-
-### Data
-
-- PostgreSQL;
-- MariaDB;
-- SQLite.
-
-### DevOps
-
-- Docker;
-- GitHub Actions;
-- Kubernetes;
-- k3s.
-
-### Web
-
-- SEO;
-- accessibility.
+- `docs/DOMAIN_MODEL.md`;
+- `docs/FINDING_LIFECYCLE.md`;
+- `docs/PROVIDER_CONTRACT.md`;
+- `docs/SYNC_MODEL.md`;
+- `docs/CONFIG_AND_VERSIONING.md`;
+- `docs/QUALITY_GATES.md`.
 
 ### Definition of Done v0.5
 
-- registry de analyzers;
-- detector selecciona analyzers aplicables;
-- resultados normalizados;
-- evidencia por finding;
-- confidence por source;
-- tests de false positives;
-- framework-specific findings.
+- contratos representados en código y tests;
+- fingerprint de findings determinístico;
+- auditorías pueden reconciliar findings históricos;
+- `.devflow.yml` se valida contra schema/version;
+- config antigua puede migrarse de forma controlada;
+- provider interface no depende de GitHub/StellarCode específicos;
+- conflictos de sync son visibles y no se pisan silenciosamente;
+- writes repetidos pueden deduplicarse por idempotency key;
+- gates producen `pass/warn/blocked/unknown`;
+- tests cubren casos felices, conflictos y regresiones.
 
-## v0.6 — Deep tooling + Git/PR
+## v0.6 — Framework analyzers
 
-### Tooling
+Objetivo: hacer que `/auditar` use analizadores específicos que emitan el Finding contract v0.5.
+
+Primera ola:
+
+- FastAPI/Python;
+- Node.js;
+- Next.js/React;
+- Angular;
+- PostgreSQL;
+- Docker;
+- GitHub Actions.
+
+Segunda ola:
+
+- Go;
+- Quarkus;
+- PHP;
+- MariaDB;
+- SQLite;
+- Kubernetes/k3s;
+- SEO/accessibility.
+
+Tooling a integrar progresivamente:
 
 - Ruff;
 - mypy;
@@ -551,32 +579,48 @@ Objetivo: hacer que `/auditar` pase de heurística genérica a análisis especí
 - npm audit;
 - Semgrep;
 - Trivy;
-- duplication scanner;
+- duplication scanners;
 - dead-code adapters.
 
-### Git / PR
+### Definition of Done v0.6
 
-Implementar:
+- analyzer registry/plugin architecture;
+- detector selecciona analyzers aplicables;
+- findings normalizados;
+- stable fingerprints;
+- evidence/confidence por finding;
+- false-positive regression tests;
+- historical reconciliation;
+- tool failures no se confunden con findings.
+
+## v0.7 — GitHub / CI / PR
+
+Implementar provider GitHub sobre el capability contract.
+
+Comandos objetivo:
 
 ```text
 /pr
 /review-pr
 ```
 
-Debe poder:
+Debe cubrir:
 
-- revisar diff;
-- ejecutar quality gates;
-- detectar archivos accidentales;
-- revisar migrations;
-- generar PR summary;
-- vincular PR con StellarCode task;
-- ingerir CI status;
-- registrar evidencia.
+- repository/branch state;
+- PR create/read/review;
+- diff inspection;
+- CI/check state;
+- evidence ingestion;
+- task ↔ PR linking;
+- release metadata;
+- idempotent event ingestion;
+- sync a StellarCode.
 
-## v0.7 — Release / Deploy / Rollback
+No convertir GitHub en dependencia obligatoria del core.
 
-Implementar:
+## v0.8 — Release / Deploy / Rollback
+
+Implementar provider-neutral:
 
 ```text
 /release
@@ -585,13 +629,12 @@ Implementar:
 /rollback
 ```
 
-Providers previstos:
+Providers iniciales previstos:
 
 - GitHub Actions;
-- SSH;
+- SSH/custom command;
 - Docker;
-- Kubernetes/k3s;
-- custom adapter.
+- Kubernetes/k3s.
 
 Requisitos:
 
@@ -599,11 +642,12 @@ Requisitos:
 - commit/version objetivo;
 - preflight;
 - migration awareness;
-- rollback;
+- rollback reference;
 - smoke tests;
-- evidencia post-deploy.
+- post-deploy evidence;
+- Deployment separado de Release.
 
-## v0.8 — Runtime / Observability / Performance
+## v0.9 — Runtime / Observability / OAuth
 
 Integraciones:
 
@@ -612,9 +656,12 @@ Integraciones:
 - Prometheus;
 - Netdata;
 - Sentry;
-- Docker;
-- Kubernetes/k3s;
-- health endpoints.
+- Docker runtime state;
+- Kubernetes/k3s state;
+- Cloudflare;
+- health endpoints;
+- OAuth 2.1 interactivo completo para StellarCode;
+- scoped automation identities.
 
 Performance modes:
 
@@ -626,23 +673,6 @@ production_observe
 ```
 
 Nunca ejecutar carga contra producción sin autorización explícita.
-
-## v0.9 — Provider ecosystem / OAuth
-
-Objetivos:
-
-- OAuth 2.1 interactivo completo para StellarCode MCP;
-- GitHub provider;
-- Cloudflare provider;
-- VPS/SSH provider;
-- Docker provider;
-- Kubernetes provider;
-- Grafana provider;
-- Sentry provider;
-- DB provider;
-- ticketing providers;
-- service accounts;
-- granular provider scopes.
 
 ## v1.0 — Engineering Operating System estable
 
@@ -918,46 +948,52 @@ Una capability que solo tiene skill/diseño debe marcarse como **📐 diseñada*
 
 ## P0 — Completar rollout StellarCode v2
 
-- migración;
-- deploy;
-- pruebas RBAC reales;
+- migration real;
+- deploy controlado;
+- pruebas RBAC owner/developer/viewer;
 - writes;
-- retiro legacy.
+- retiro gradual del shared secret legacy.
 
-## P1 — Analyzers
+## P1 — v0.5 Foundations
 
-- FastAPI;
+- domain contracts;
+- Finding lifecycle;
+- fingerprint/reconciliation;
+- config schema + validate + migrate;
+- provider capability interface;
+- sync conflicts + idempotency;
+- quality gates + profiles;
+- service identity model.
+
+## P2 — v0.6 Analyzers
+
+- FastAPI/Python;
 - Node/Next/React;
 - Angular;
-- Go;
-- Quarkus;
-- PHP;
 - PostgreSQL;
-- Docker.
+- Docker;
+- GitHub Actions;
+- luego Go/Quarkus/PHP y resto del catálogo.
 
-## P2 — GitHub / CI
+## P3 — v0.7 GitHub / CI
 
 - PRs;
 - checks;
-- releases;
-- evidencia automática;
-- sync a StellarCode.
+- releases metadata;
+- evidence ingestion;
+- task linking;
+- event deduplication.
 
-## P3 — Runtime
+## P4 — v0.8/v0.9 Runtime + Deploy
 
+- release/deploy/rollback;
 - k6;
-- Grafana;
-- Prometheus;
+- Grafana/Prometheus;
 - Sentry;
 - Docker;
-- k3s/Kubernetes.
-
-## P4 — Deploy
-
-- staging;
-- production;
-- verify;
-- rollback.
+- k3s/Kubernetes;
+- Cloudflare;
+- OAuth interactive.
 
 ---
 
@@ -971,6 +1007,13 @@ Documentos especializados:
 - `IMPLEMENTATION_STATUS.md` — inventario corto de implementación.
 - `ops/BACKLOG.md` — trabajo operativo inmediato.
 - `docs/MCP_ROADMAP.md` — detalle específico del ecosistema MCP.
+- `docs/DOMAIN_MODEL.md` — entidades y ownership canónico.
+- `docs/FINDING_LIFECYCLE.md` — identidad, fingerprint y estados de findings.
+- `docs/PROVIDER_CONTRACT.md` — interfaz/capabilities de providers.
+- `docs/SYNC_MODEL.md` — autoridad, conflictos e idempotencia.
+- `docs/CONFIG_AND_VERSIONING.md` — schema y compatibilidad.
+- `docs/QUALITY_GATES.md` — profiles, gates y approvals.
+- `docs/CLAUDE_HANDOFF.md` — secuencia recomendada para continuar desarrollo con Claude.
 - `docs/COMMANDS.md` — routing de comandos.
 - `docs/CLI.md` — uso del CLI.
 - `scorecards/` — reglas de scoring.
