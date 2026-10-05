@@ -1,0 +1,32 @@
+version: 1
+
+project:
+  name: "DevFlow Core"
+  slug: "devflow-core"
+  stage: "prototype"
+  type: "monorepo"
+  criticality: "medium"
+  expected_traffic: "n/a"
+  budget_profile: "lean"
+
+preferences:
+  philosophy: "simple-first"
+  prefer_incremental_scaling: true
+  avoid_premature_microservices: true
+  avoid_premature_kubernetes: true
+
+audit:
+  profile: "tooling"
+  require_evidence: true
+
+approvals:
+  production_deploy: true
+  destructive_db_change: true
+  force_push: true
+  dns_change: true
+  shared_infrastructure_change: true
+
+trace:
+  enabled: true
+  timezone: "America/Guayaquil"
+  id_prefix: "DEVFLOW"
