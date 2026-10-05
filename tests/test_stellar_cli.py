@@ -38,3 +38,11 @@ def test_discovery_and_adoption_commands_parse():
     args = parser.parse_args(["stellar-sync", "--target", ".", "--dry-run"])
     assert args.command == "stellar-sync"
     assert args.dry_run is True
+
+
+def test_time_command_parse():
+    parser = build_parser()
+    args = parser.parse_args(["time", "start", "--task-id", "9", "--category", "development"])
+    assert args.command == "time"
+    assert args.action == "start"
+    assert args.task_id == 9
