@@ -1,0 +1,89 @@
+from __future__ import annotations
+
+import json
+from dataclasses import asdict, dataclass, field
+from enum import Enum
+from pathlib import Path
+from typing import Any
+
+from .utils import now_iso
+
+
+class SyncStatus(str, Enum):
+    CLEAN = "clean"
+    CHANGED = "changed"
+    CONFLICT = "conflict"
+    PARTIAL = "partial"
+    FAILED = "failed"
+
+
+AUTHORITY = {
+    "source_code": "git",
+    "git_state": "git",
+    "work_item": "stellarcode",
+    "members": "stellarcode",
+    "roles": "stellarcode",
+    "audit_reports": "devflow",
+    "findings": "devflow",
+    "runtime_health": "runtime",
+    "deploy_state": "deployment",
+    "config": "devflow",
+}
+
+
+@dataclass(slots=True)
+class SyncConflict:
+    field: str
+    local_value: Any
+    remote_value: Any
+    authority: str
+    recommended_resolution: str
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+@dataclass(slots=True)
+class SyncResult:
+    status: str
+    changes: list[dict[str, Any]] = field(default_factory=list)
+    conflicts: list[dict[str, Any]] = field(default_factory=list)
+    evidence: list[dict[str, Any]] = field(default_factory=list)
+    source_versions: dict[str, str] = field(default_factory=dict)
+    timestamp: str = field(default_factory=now_iso)
+
+    def to_dict(self) -> dict[str, Any]:
+        return asdict(self)
+
+
+def detect_conflict(field: str, local_value: Any, remote_value: Any, authority: str) -> SyncConflict | None:
+    if local_value == remote_value:
+        return None
+    resolution = f"use_{authority}" if authority in {"git", "stellarcode", "runtime", "deployment", "devflow"} else "manual_review"
+    return SyncConflict(field, local_value, remote_value, authority, resolution)
+
+
+class IdempotencyStore:
+    def __init__(self, root: Path):
+        self.path = root / "ops" / "idempotency.json"
+
+    def _load(self) -> dict[str, dict[str, Any]]:
+        if not self.path.exists():
+            return {}
+        try:
+            data = json.loads(self.path.read_text(encoding="utf-8"))
+            return data if isinstance(data, dict) else {}
+        except (json.JSONDecodeError, OSError):
+            return {}
+
+    def seen(self, key: str) -> bool:
+        return key in self._load()
+
+    def register(self, key: str, metadata: dict[str, Any] | None = None) -> bool:
+        data = self._load()
+        if key in data:
+            return False
+        data[key] = {"registered_at": now_iso(), "metadata": metadata or {}}
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+        return True
