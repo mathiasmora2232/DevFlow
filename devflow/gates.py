@@ -4,6 +4,7 @@ from dataclasses import asdict, dataclass, field
 from typing import Any
 
 from . import __version__
+from .config_schema import default_profile_for_stage
 from .findings import waiver_active
 from .utils import now_iso
 
@@ -89,7 +90,7 @@ class GateResult:
 
 
 def gate_policy(config: dict[str, Any], gate: str) -> dict[str, Any]:
-    profile = config.get("profile") or config.get("project", {}).get("stage") or "mvp"
+    profile = config.get("profile") or default_profile_for_stage(config.get("project", {}).get("stage"))
     base = dict(PROFILES.get(profile, PROFILES["mvp"]).get(gate, {}))
     base.update(config.get("gates", {}).get(gate, {}))
     return base
