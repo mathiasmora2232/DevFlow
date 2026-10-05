@@ -160,3 +160,164 @@ def write_stellar_snapshot(root: Path, payload: dict[str, Any]) -> Path:
     lines.append("")
     path.write_text("\n".join(lines), encoding="utf-8")
     return path
+
+
+async def _list_tools_async(url: str, token: str, client_name: str) -> list[str]:
+    try:
+        from mcp import ClientSession
+        from mcp.client.streamable_http import streamablehttp_client
+    except ImportError as exc:
+        raise StellarError("Python package `mcp` is required. Reinstall DevFlow with `pip install -e .`.") from exc
+
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "X-MCP-Client": client_name,
+        "X-Request-Id": f"devflow-{os.getpid()}-list-tools",
+    }
+    try:
+        async with streamablehttp_client(url, headers=headers) as streams:
+            read_stream, write_stream = streams[0], streams[1]
+            async with ClientSession(read_stream, write_stream) as session:
+                await session.initialize()
+                result = await session.list_tools()
+    except Exception as exc:
+        raise StellarError(f"StellarCode MCP list_tools failed: {exc}") from exc
+    return sorted(tool.name for tool in getattr(result, "tools", []) or [])
+
+
+def list_tools(root: Path, require_project: bool = False) -> list[str]:
+    stellar = stellar_config(root, require_project=require_project)
+    token = stellar_token(stellar)
+    return asyncio.run(_list_tools_async(
+        stellar["mcp_url"],
+        token,
+        stellar.get("client_name") or "devflow-cli",
+    ))
+
+
+def capability_matrix(tool_names: list[str] | set[str]) -> dict[str, dict[str, Any]]:
+    tools = set(tool_names)
+
+    def state(native: set[str], bridge: set[str] | None = None) -> str:
+        if native and native.issubset(tools):
+            return "native"
+        if bridge and bridge.issubset(tools):
+            return "bridge"
+        return "missing"
+
+    return {
+        "project": {"state": state({"create_project", "get_project"}), "required": ["create_project", "get_project"]},
+        "kanban": {"state": state({"list_project_tasks", "create_roadmap_task", "update_task"}), "required": ["list_project_tasks", "create_roadmap_task", "update_task"]},
+        "phases": {"state": state({"get_project_plan", "create_project_phase"}), "required": ["get_project_plan", "create_project_phase"]},
+        "evidence": {"state": state({"add_project_evidence"}), "required": ["add_project_evidence"]},
+        "risks": {"state": state({"add_project_risk"}), "required": ["add_project_risk"]},
+        "decisions": {"state": state({"list_project_decisions", "add_project_decision"}), "required": ["list_project_decisions", "add_project_decision"]},
+        "discovery": {"state": state({"sync_discovery_bundle"}, {"add_project_evidence"}), "required": ["sync_discovery_bundle"]},
+        "stack": {"state": state({"sync_stack"}, {"add_project_evidence"}), "required": ["sync_stack"]},
+        "audits": {"state": state({"sync_audit_bundle"}, {"add_project_evidence"}), "required": ["sync_audit_bundle"]},
+        "infrastructure": {"state": state({"sync_infrastructure"}, {"add_project_evidence"}), "required": ["sync_infrastructure"]},
+        "time_tracking": {"state": state({"start_time", "stop_time", "create_time_entry", "list_time_entries"}), "required": ["start_time", "stop_time", "create_time_entry", "list_time_entries"]},
+    }
+
+
+def adopt_project(
+    root: Path,
+    *,
+    client_id: int | None = None,
+    description: str | None = None,
+) -> dict[str, Any]:
+    cfg = load_config(root)
+    if not cfg:
+        raise StellarError("No .devflow.yml found. Run `devflow /nuevo-proyecto` first.")
+    project = cfg.get("project", {})
+    ownership = project.get("ownership") or "internal"
+    resolved_client = client_id if client_id is not None else project.get("client_id")
+    if ownership == "external_client" and not resolved_client:
+        raise StellarError("External-client adoption requires --client-id or project.client_id.")
+
+    result = call_tool(
+        root,
+        "create_project",
+        {
+            "title": project.get("name") or root.name,
+            "description": description or f"Adopted by DevFlow ({project.get('engagement', 'greenfield')}).",
+            **({"client_id": int(resolved_client)} if resolved_client else {}),
+            "status": "pending",
+            "project_type": project.get("type") or "unknown",
+        },
+        require_project=False,
+    )
+    remote = result.get("project") or {}
+    project_id = remote.get("id") or result.get("project_id")
+    if not project_id:
+        raise StellarError(f"create_project did not return a project id: {result}")
+    bind_project(root, int(project_id))
+    return {"project_id": int(project_id), "project": remote}
+
+
+def discovery_sync_plan(tool_names: list[str] | set[str]) -> dict[str, Any]:
+    matrix = capability_matrix(tool_names)
+    return {
+        "matrix": matrix,
+        "native": sorted(k for k, v in matrix.items() if v["state"] == "native"),
+        "bridge": sorted(k for k, v in matrix.items() if v["state"] == "bridge"),
+        "missing": sorted(k for k, v in matrix.items() if v["state"] == "missing"),
+    }
+
+
+def sync_discovery(root: Path, snapshot: dict[str, Any], *, dry_run: bool = False) -> dict[str, Any]:
+    tools = list_tools(root, require_project=True)
+    plan = discovery_sync_plan(tools)
+    stellar = stellar_config(root)
+    project_id = int(stellar["project_id"])
+
+    if dry_run:
+        return {"status": "dry_run", "project_id": project_id, **plan}
+
+    if "sync_discovery_bundle" in tools:
+        payload = {
+            "project_id": project_id,
+            "schema_version": snapshot.get("schema_version", 1),
+            "discovery": snapshot,
+        }
+        result = call_tool(root, "sync_discovery_bundle", payload)
+        return {"status": "synced", "project_id": project_id, "transport": "structured_bundle", "result": result, **plan}
+
+    if "add_project_evidence" not in tools:
+        return {
+            "status": "pending",
+            "project_id": project_id,
+            "reason": "StellarCode MCP has no discovery bundle tool or evidence bridge.",
+            **plan,
+        }
+
+    audit = snapshot.get("audit_summary") or {}
+    project = snapshot.get("project") or {}
+    stack = snapshot.get("stack_components") or []
+    stack_text = ", ".join(f"{x.get('category')}={x.get('technology')}" for x in stack) or "none detected"
+    note = "\n".join([
+        "DevFlow discovery compatibility snapshot",
+        f"ownership={project.get('ownership')}",
+        f"engagement={project.get('engagement')}",
+        f"revision={(snapshot.get('repository') or {}).get('revision')}",
+        f"stack={stack_text}",
+        f"technical_health={audit.get('project_health_score')}",
+        f"stack_fit={audit.get('stack_fit_score')}",
+        f"evidence_confidence={audit.get('evidence_confidence')}",
+        f"findings={audit.get('finding_count')}",
+        "Structured discovery/stack/audit sync is pending MCP v3 capabilities.",
+    ])
+    result = call_tool(root, "add_project_evidence", {
+        "project_id": project_id,
+        "title": f"DevFlow Discovery — {snapshot.get('generated_at')}",
+        "kind": "note",
+        "note": note,
+    })
+    return {
+        "status": "partial",
+        "project_id": project_id,
+        "transport": "evidence_bridge",
+        "evidence_id": result.get("evidence_id"),
+        "pending_domains": plan["bridge"] + plan["missing"],
+        **plan,
+    }
