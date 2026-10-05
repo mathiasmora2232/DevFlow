@@ -35,6 +35,10 @@ ALIASES = {
     "/docs": "docs",
     "/secretos": "secretos", "secrets": "secretos",
     "/stellar-status": "stellar-status",
+    "/proyectos": "stellar-projects", "projects": "stellar-projects",
+    "/roles": "roles",
+    "/miembros": "miembros", "members": "miembros",
+    "/decision": "decision", "decision": "decision",
     "/kanban": "kanban",
     "/siguiente": "siguiente", "next": "siguiente",
 }
@@ -300,6 +304,122 @@ def cmd_stellar_status(args) -> int:
     return 0
 
 
+def cmd_stellar_projects(args) -> int:
+    root = _target(args.target)
+    try:
+        projects = stellar_call_tool(root, "list_my_projects", {}, require_project=False).get("projects", [])
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    if not projects:
+        print("No accessible StellarCode projects.")
+        return 0
+    for project in projects:
+        print(f"{project.get('id')} | {project.get('title','')} | {project.get('status','unknown')} | role={project.get('role','unknown')} | progress={project.get('progress','-')}")
+    return 0
+
+
+def cmd_roles(args) -> int:
+    root = _target(args.target)
+    try:
+        roles = stellar_call_tool(root, "list_project_roles", {}, require_project=False).get("roles", [])
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    for role in roles:
+        permissions = role.get("permissions", [])
+        if isinstance(permissions, str):
+            permissions = [permissions]
+        print(f"{role.get('role_key')} — {role.get('name') or ''}")
+        for permission in permissions:
+            print(f"  - {permission}")
+    return 0
+
+
+def cmd_members(args) -> int:
+    root = _target(args.target)
+    try:
+        stellar = stellar_config(root)
+        project_id = int(stellar["project_id"])
+
+        if args.action == "list":
+            members = stellar_call_tool(root, "list_project_members", {"project_id": project_id}).get("members", [])
+            for member in members:
+                print(f"{member.get('user_id')} | {member.get('name') or member.get('email')} | {member.get('role')}")
+            return 0
+
+        if args.user_id is None:
+            print("ERROR: member mutation requires --user-id")
+            return 2
+
+        if args.action == "add":
+            if not args.role:
+                print("ERROR: miembros add requires --role")
+                return 2
+            result = stellar_call_tool(root, "add_project_member", {
+                "project_id": project_id,
+                "user_id": args.user_id,
+                "role": args.role,
+            })
+            print(f"Member {args.user_id} added/updated as {args.role}")
+            return 0 if result.get("ok", True) else 5
+
+        if args.action == "role":
+            if not args.role:
+                print("ERROR: miembros role requires --role")
+                return 2
+            result = stellar_call_tool(root, "update_project_member_role", {
+                "project_id": project_id,
+                "user_id": args.user_id,
+                "role": args.role,
+            })
+            print(f"Member {args.user_id} role -> {args.role}")
+            return 0 if result.get("ok", True) else 5
+
+        if args.action == "remove":
+            result = stellar_call_tool(root, "remove_project_member", {
+                "project_id": project_id,
+                "user_id": args.user_id,
+            })
+            print(f"Member {args.user_id} removed={result.get('removed', True)}")
+            return 0 if result.get("ok", True) else 5
+
+        return 2
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+
+
+def cmd_decision(args) -> int:
+    root = _target(args.target)
+    try:
+        stellar = stellar_config(root)
+        project_id = int(stellar["project_id"])
+        if args.action == "list":
+            decisions = stellar_call_tool(root, "list_project_decisions", {"project_id": project_id}).get("decisions", [])
+            for item in decisions:
+                print(f"{item.get('id')} | [{item.get('status','accepted')}] {item.get('title','')}")
+            return 0
+
+        if not args.title or not args.decision_text:
+            print("ERROR: decision add requires --title and --decision")
+            return 2
+        result = stellar_call_tool(root, "add_project_decision", {
+            "project_id": project_id,
+            "title": args.title,
+            "context": args.context,
+            "decision": args.decision_text,
+            "consequences": args.consequences,
+            "status": args.status,
+        })
+        record = result.get("decision") or {}
+        print(f"Decision recorded: {record.get('id','?')} — {args.title}")
+        return 0 if result.get("ok", True) else 5
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+
+
 def cmd_kanban(args) -> int:
     root = _target(args.target)
     try:
@@ -384,6 +504,10 @@ def build_parser() -> argparse.ArgumentParser:
     tr = sub.add_parser("traza", help="Sincroniza traza con Git"); tr.add_argument("--target", default="."); tr.add_argument("--environment", default="local"); tr.add_argument("--stellar", action="store_true", help="Sincroniza snapshot del Kanban/identidad"); tr.set_defaults(func=cmd_trace)
     sb = sub.add_parser("stellar-bind", help="Vincula el proyecto local con StellarCode MCP"); sb.add_argument("--target", default="."); sb.add_argument("--project-id", type=int, required=True); sb.add_argument("--url", default="https://api.stellarcodelabs.lat/mcp"); sb.add_argument("--token-env", default="STELLARCODE_TOKEN"); sb.set_defaults(func=cmd_stellar_bind)
     ss = sub.add_parser("stellar-status", help="Muestra identidad y permisos efectivos en StellarCode"); ss.add_argument("--target", default="."); ss.set_defaults(func=cmd_stellar_status)
+    sp = sub.add_parser("stellar-projects", help="Lista proyectos accesibles al usuario StellarCode"); sp.add_argument("--target", default="."); sp.set_defaults(func=cmd_stellar_projects)
+    rl = sub.add_parser("roles", help="Lista roles y permisos de proyecto"); rl.add_argument("--target", default="."); rl.set_defaults(func=cmd_roles)
+    mb = sub.add_parser("miembros", help="Gestiona miembros y roles del proyecto vinculado"); mb.add_argument("action", nargs="?", choices=["list","add","role","remove"], default="list"); mb.add_argument("--target", default="."); mb.add_argument("--user-id", type=int); mb.add_argument("--role", choices=["owner","admin","manager","developer","reviewer","viewer"]); mb.set_defaults(func=cmd_members)
+    dc = sub.add_parser("decision", help="Lista o registra decisiones ADR-style en StellarCode"); dc.add_argument("action", nargs="?", choices=["list","add"], default="list"); dc.add_argument("--target", default="."); dc.add_argument("--title"); dc.add_argument("--decision", dest="decision_text"); dc.add_argument("--context"); dc.add_argument("--consequences"); dc.add_argument("--status", choices=["proposed","accepted","superseded","rejected"], default="accepted"); dc.set_defaults(func=cmd_decision)
     kb = sub.add_parser("kanban", help="Consulta o mueve tareas del Kanban StellarCode"); kb.add_argument("action", nargs="?", choices=["list","move"], default="list"); kb.add_argument("--target", default="."); kb.add_argument("--task-id", type=int); kb.add_argument("--status", choices=["pending","in_progress","review","completed","blocked"]); kb.set_defaults(func=cmd_kanban)
     nx = sub.add_parser("siguiente", help="Recomienda la siguiente tarea del Kanban StellarCode"); nx.add_argument("--target", default="."); nx.set_defaults(func=cmd_next)
     st = sub.add_parser("estado", help="Resumen de estado"); st.add_argument("--target", default="."); st.set_defaults(func=cmd_status)
