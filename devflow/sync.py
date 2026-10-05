@@ -7,6 +7,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
+from . import __version__
 from .utils import now_iso
 
 
@@ -49,6 +50,7 @@ class SyncResult:
     status: str
     schema: str = "devflow.sync-result"
     schema_version: int = 1
+    devflow_version: str = __version__
     changes: list[dict[str, Any]] = field(default_factory=list)
     conflicts: list[dict[str, Any]] = field(default_factory=list)
     evidence: list[dict[str, Any]] = field(default_factory=list)
