@@ -47,6 +47,8 @@ class SyncConflict:
 @dataclass(slots=True)
 class SyncResult:
     status: str
+    schema: str = "devflow.sync-result"
+    schema_version: int = 1
     changes: list[dict[str, Any]] = field(default_factory=list)
     conflicts: list[dict[str, Any]] = field(default_factory=list)
     evidence: list[dict[str, Any]] = field(default_factory=list)
