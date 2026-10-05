@@ -42,6 +42,14 @@ DEFAULT_CONFIG = {
         "production_deploy": True, "production_load_test": True, "destructive_db_change": True,
         "force_push": True, "dns_change": True, "shared_infrastructure_change": True,
     },
+    "stellarcode": {
+        "enabled": False,
+        "mcp_url": "https://api.stellarcodelabs.lat/mcp",
+        "project_id": None,
+        "client_name": "devflow-cli",
+        "auth": {"mode": "bearer", "token_env": "STELLARCODE_TOKEN"},
+        "sync": {"backlog": "remote_first", "trace": True, "evidence": True, "decisions": True, "risks": True},
+    },
     "trace": {"enabled": True, "timezone": "America/Guayaquil", "id_prefix": "DEV"},
 }
 
