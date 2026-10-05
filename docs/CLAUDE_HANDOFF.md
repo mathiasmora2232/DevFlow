@@ -9,13 +9,15 @@ Before implementing a release, read:
 1. `DEVFLOW_ROADMAP.md`
 2. `CLAUDE.md`
 3. `docs/DOMAIN_MODEL.md`
-4. `docs/FINDING_LIFECYCLE.md`
-5. `docs/PROVIDER_CONTRACT.md`
-6. `docs/SYNC_MODEL.md`
-7. `docs/CONFIG_AND_VERSIONING.md`
-8. `docs/QUALITY_GATES.md`
-9. the relevant `skills/*/SKILL.md`
-10. `ops/BACKLOG.md`
+4. `docs/PROJECT_DISCOVERY.md`
+5. `docs/STELLARCODE_HUB_CONTRACT.md`
+6. `docs/FINDING_LIFECYCLE.md`
+7. `docs/PROVIDER_CONTRACT.md`
+8. `docs/SYNC_MODEL.md`
+9. `docs/CONFIG_AND_VERSIONING.md`
+10. `docs/QUALITY_GATES.md`
+11. the relevant `skills/*/SKILL.md`
+12. `ops/BACKLOG.md`
 
 ## Current baseline
 
@@ -55,6 +57,9 @@ Implemented:
 Do not rebuild these under alternate abstractions unless a migration is explicitly designed.
 
 ### v0.6 — Analyzers ← next
+
+Project discovery/onboarding and all analyzer outputs must synchronize structured data to StellarCode MCP according to `docs/STELLARCODE_HUB_CONTRACT.md`. Do not build analyzers that only produce local Markdown.
+
 
 Implement plugin/registry architecture and high-value analyzers first:
 
