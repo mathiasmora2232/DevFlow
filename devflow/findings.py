@@ -194,6 +194,16 @@ def update_finding_status(
     approved_by: str | None = None,
     expires_at: str | None = None,
 ) -> dict[str, Any] | None:
+    waiver_statuses = {
+        FindingStatus.ACCEPTED_RISK.value,
+        FindingStatus.SUPPRESSED.value,
+        FindingStatus.FALSE_POSITIVE.value,
+    }
+    if status in waiver_statuses and not reason:
+        raise ValueError("waiver status requires reason")
+    if status in waiver_statuses and not approved_by:
+        raise ValueError("waiver status requires approved_by")
+
     findings = load_findings(root)
     found = None
     for item in findings:
