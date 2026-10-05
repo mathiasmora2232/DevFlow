@@ -73,3 +73,36 @@ devflow /secretos --fail-on high
 ```
 
 Busca patrones de credenciales y archivos sensibles. Los valores se redactan en consola/reportes. `--fail-on` permite usarlo como quality gate en CI.
+
+## StellarCode MCP
+
+Vincula un repo local al proyecto operativo en StellarCode:
+
+```bash
+devflow stellar-bind --project-id 10
+```
+
+Configura el JWT real del usuario fuera del repo:
+
+```bash
+export STELLARCODE_TOKEN="..."
+```
+
+PowerShell:
+
+```powershell
+$env:STELLARCODE_TOKEN="..."
+```
+
+Comandos:
+
+```bash
+devflow /stellar-status
+devflow /kanban
+devflow /kanban move --task-id 184 --status review
+devflow /planificar "Agregar historial" --stellar
+devflow /traza --stellar
+devflow /siguiente
+```
+
+El sync de backlog es `remote_first`: DevFlow crea/actualiza primero StellarCode y luego persiste la traza local. El token nunca se escribe en `.devflow.yml`.
