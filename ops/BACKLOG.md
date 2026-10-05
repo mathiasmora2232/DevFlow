@@ -16,16 +16,17 @@
 ## P1 — DevFlow v0.6 Analyzers
 
 First wave:
+- FastAPI/Python analyzer.
+- Node/Next/React analyzer.
+- Angular analyzer.
+- PostgreSQL analyzer.
+- Docker analyzer.
+- GitHub Actions analyzer.
 - Analyzer registry/plugin architecture.
-- FastAPI/Python.
-- Node/Next/React.
-- Angular.
-- PostgreSQL.
-- Docker.
-- GitHub Actions.
-- Findings must use the canonical v0.5 contract.
-- Tool errors must not be confused with findings.
-- Add false-positive regression fixtures.
+- Canonical Finding output only.
+- Stable fingerprints from every analyzer.
+- Evidence/confidence per finding.
+- False-positive regression fixtures.
 
 Second wave:
 - Go.
@@ -50,15 +51,15 @@ Second wave:
 
 ## P3 — DevFlow v0.8 Release / Deploy
 
-- Release provider contract implementation.
-- Deployment records.
-- Preflight.
+- Release model/provider execution.
+- Deploy provider abstraction.
+- Rollback.
 - Migration awareness.
-- Rollback references.
-- Smoke verification.
-- Approval-gated production operations.
+- Staging preflight.
+- Production verification.
+- Post-deploy evidence.
 
-## P4 — DevFlow v0.9 Runtime / Observability
+## P4 — DevFlow v0.9 Runtime / Observability / OAuth
 
 - k6.
 - Grafana/Prometheus.
