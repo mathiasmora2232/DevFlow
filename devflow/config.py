@@ -86,7 +86,14 @@ def build_config(name: str, detected: dict, answers: dict) -> dict:
         "expected_traffic": answers.get("traffic", "unknown"),
         "budget_profile": answers.get("budget", "lean"),
     })
-    cfg["profile"] = answers.get("stage", "mvp")
+    stage = answers.get("stage", "mvp")
+    cfg["profile"] = {
+        "prototype": "prototype",
+        "mvp": "mvp",
+        "growth": "production",
+        "production": "production",
+        "legacy": "legacy-modernization",
+    }.get(stage, "mvp")
     cfg["stack"]["backend"]["primary"] = answers.get("backend") or detected.get("backend", "none")
     cfg["stack"]["frontend"]["primary"] = answers.get("frontend") or detected.get("frontend", "none")
     cfg["stack"]["database"]["primary"] = answers.get("database") or detected.get("database", "none")
