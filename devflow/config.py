@@ -8,7 +8,7 @@ from .config_schema import default_profile_for_stage
 from .utils import slugify
 
 DEFAULT_CONFIG = {
-    "schema_version": 2,
+    "schema_version": 3,
     "project": {
         "name": "Project",
         "slug": "project",
@@ -17,6 +17,9 @@ DEFAULT_CONFIG = {
         "criticality": "medium",
         "expected_traffic": "unknown",
         "budget_profile": "lean",
+        "ownership": "internal",
+        "engagement": "greenfield",
+        "client_id": None,
     },
     "profile": "mvp",
     "providers": {},
@@ -86,6 +89,9 @@ def build_config(name: str, detected: dict, answers: dict) -> dict:
         "criticality": answers.get("criticality", "medium"),
         "expected_traffic": answers.get("traffic", "unknown"),
         "budget_profile": answers.get("budget", "lean"),
+        "ownership": answers.get("ownership", "internal"),
+        "engagement": answers.get("engagement", "greenfield"),
+        "client_id": answers.get("client_id"),
     })
     stage = answers.get("stage", "mvp")
     cfg["profile"] = {
