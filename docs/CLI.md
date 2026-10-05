@@ -127,7 +127,7 @@ devflow config migrate --check
 devflow config migrate
 ```
 
-La migración v1→v2 crea backup local y nunca mueve credenciales crudas a YAML.
+La migración v1→v3 crea backup local y nunca mueve credenciales crudas a YAML.
 
 ### Findings
 
@@ -161,7 +161,7 @@ devflow config migrate --check
 devflow config migrate
 ```
 
-Schema v2 adds explicit `schema_version`, operational `profile`, `providers` and `gates`. Migration creates a backup before mutating the config and never persists raw StellarCode credentials.
+Schema v3 adds explicit project `ownership`, `engagement` and optional `client_id` on top of the v2 foundations. Migration creates a backup before mutating the config and never persists raw StellarCode credentials.
 
 ### Finding lifecycle
 
