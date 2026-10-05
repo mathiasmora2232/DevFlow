@@ -125,11 +125,19 @@ def cmd_audit(args) -> int:
 
     project_slug = cfg.get("project", {}).get("slug") or root.name
     raw_findings = result.get("findings", [])
-    current = [normalize_legacy_finding(item, project_slug) for item in raw_findings]
+    current = [
+        item if item.get("fingerprint") else normalize_legacy_finding(item, project_slug)
+        for item in raw_findings
+    ]
     merged, finding_stats = reconcile_findings(load_findings(root), current)
     save_findings(root, merged)
-    result["findings"] = merged
+    merged_by_fp = {item.get("fingerprint"): item for item in merged if item.get("fingerprint")}
+    result["findings"] = [
+        merged_by_fp.get(item.get("fingerprint"), item)
+        for item in current
+    ]
     result["finding_reconciliation"] = finding_stats
+    result["finding_history_file"] = "ops/findings.json"
 
     reports = root / "ops" / "reports"; reports.mkdir(parents=True, exist_ok=True)
     stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
@@ -506,6 +514,8 @@ def cmd_config(args) -> int:
             return 6
         mode = "would migrate" if args.check and result["changed"] else "migrated" if result["changed"] else "already current"
         print(f"Config {mode}: schema {result['from']} -> {result['to']}")
+        if args.check and result.get("diff"):
+            print(result["diff"])
         if not args.check:
             errors = validate_config(result["config"])
             if errors:
