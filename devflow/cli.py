@@ -16,13 +16,14 @@ from .findings import load_findings, normalize_legacy_finding, reconcile_finding
 from .gates import evaluate_gate
 from .detector import detect_stack
 from .doctor import doctor_project, doctor_markdown
+from .discovery import discover_project, infer_engagement, write_discovery
 from .docs_audit import audit_docs, docs_markdown
 from .secrets_scan import scan_secrets, secrets_markdown, should_fail
 from .report import audit_markdown, stack_review_markdown
 from .scoring import weighted_score, evidence_confidence
 from .stackfit import evaluate_stack_fit
 from .trace import ensure_ops, sync_trace, next_work_id, add_work
-from .stellar import StellarError, bind_project, call_tool as stellar_call_tool, choose_next_task, stellar_config, write_stellar_snapshot
+from .stellar import (StellarError, adopt_project, bind_project, call_tool as stellar_call_tool, capability_matrix, choose_next_task, discovery_sync_plan, list_tools as stellar_list_tools, stellar_config, sync_discovery, write_stellar_snapshot)
 from .utils import slugify
 
 ALIASES = {
@@ -38,6 +39,10 @@ ALIASES = {
     "/docs": "docs",
     "/secretos": "secretos", "secrets": "secretos",
     "/stellar-status": "stellar-status",
+    "/descubrir": "descubrir", "discover": "descubrir",
+    "/stellar-capabilities": "stellar-capabilities",
+    "/adoptar-stellar": "stellar-adopt", "stellar-adopt": "stellar-adopt",
+    "/sincronizar-stellar": "stellar-sync", "stellar-sync": "stellar-sync",
     "/proyectos": "stellar-projects", "projects": "stellar-projects",
     "/roles": "roles",
     "/miembros": "miembros", "members": "miembros",
@@ -75,6 +80,9 @@ def cmd_init(args) -> int:
             "budget": args.budget or "lean", "backend": args.backend or detected.get("backend", "none"),
             "frontend": args.frontend or detected.get("frontend", "none"), "database": args.database or detected.get("database", "none"),
             "edge": args.edge, "orchestration": args.orchestration,
+            "ownership": args.ownership or "internal",
+            "engagement": args.engagement or infer_engagement(root, detected),
+            "client_id": args.client_id,
         }
     else:
         print("\nDevFlow /nuevo-proyecto — usa Enter para aceptar la detección/default.\n")
@@ -85,12 +93,19 @@ def cmd_init(args) -> int:
             "criticality": _ask("Criticidad", "medium", ["low","medium","high","critical"]),
             "traffic": _ask("Tráfico esperado", "unknown"),
             "budget": _ask("Perfil de presupuesto", "lean", ["lean","balanced","flexible"]),
+            "ownership": _ask("Propiedad", "internal", ["internal","external_client"]),
+            "engagement": _ask("Tipo de trabajo", infer_engagement(root, detected), ["greenfield","migration","refactor","modernization","maintenance","audit_only"]),
             "backend": _ask("Backend", detected.get("backend", "none"), ["fastapi","go","nodejs","quarkus","php","none","other"]),
             "frontend": _ask("Frontend", detected.get("frontend", "none"), ["angular","nextjs","react","javascript","none","other"]),
             "database": _ask("Base de datos", detected.get("database", "none"), ["postgresql","mariadb","sqlite","none","other"]),
             "edge": _ask("Edge", "cloudflare" if "cloudflare" in detected.get("infra",[]) else "none", ["cloudflare","none","other"]),
             "orchestration": _ask("Orquestación", "k3s" if "k3s" in detected.get("infra",[]) else "kubernetes" if "kubernetes" in detected.get("infra",[]) else "none", ["none","k3s","kubernetes","other"]),
         }
+        if answers["ownership"] == "external_client":
+            raw_client = _ask("StellarCode client_id (puede quedar vacío y vincularse luego)", "")
+            answers["client_id"] = int(raw_client) if raw_client.isdigit() else None
+        else:
+            answers["client_id"] = None
     cfg = build_config(name, detected, answers)
     path = root / ".devflow.yml"
     if path.exists() and not args.force:
@@ -290,6 +305,80 @@ def cmd_secrets(args) -> int:
         print(f"... {len(result['findings']) - 20} more findings in report")
     print(f"Report: {md_path}")
     return 4 if should_fail(result, args.fail_on) else 0
+
+
+def cmd_discover(args) -> int:
+    root = _target(args.target)
+    _require_config(root)
+    snapshot = discover_project(root, run_audit=not args.no_audit)
+    json_path, md_path = write_discovery(root, snapshot)
+    p = snapshot["project"]
+    a = snapshot.get("audit_summary") or {}
+    print(f"DISCOVERY {p.get('name')} ownership={p.get('ownership')} engagement={p.get('engagement')}")
+    print(f"Stack components: {len(snapshot.get('stack_components', []))}")
+    print(f"Config metadata: {len(snapshot.get('config_metadata', []))}")
+    print(f"Infrastructure facts: {len(snapshot.get('infrastructure', []))}")
+    if a:
+        print(f"Technical Health={a.get('project_health_score')} Stack Fit={a.get('stack_fit_score')} Confidence={a.get('evidence_confidence')}")
+    print(f"JSON: {json_path}")
+    print(f"MD: {md_path}")
+    if args.stellar:
+        try:
+            result = sync_discovery(root, snapshot, dry_run=args.dry_run)
+        except StellarError as exc:
+            print(f"STELLAR PENDING: {exc}")
+            return 5
+        print(f"Stellar sync: {result.get('status')} transport={result.get('transport','-')}")
+        if result.get("pending_domains"):
+            print("Pending domains: " + ", ".join(result["pending_domains"]))
+    return 0
+
+
+def cmd_stellar_capabilities(args) -> int:
+    root = _target(args.target)
+    try:
+        tools = stellar_list_tools(root, require_project=False, allow_disabled=True)
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    plan = discovery_sync_plan(tools)
+    print(f"STELLAR MCP tools={len(tools)}")
+    for domain, item in plan["matrix"].items():
+        print(f"{domain}: {item['state']}")
+    return 0
+
+
+def cmd_stellar_adopt(args) -> int:
+    root = _target(args.target)
+    cfg = _require_config(root)
+    current = cfg.get("stellarcode", {}).get("project_id")
+    if current and not args.force:
+        print(f"ERROR: project already bound to StellarCode project_id={current}. Use --force only for intentional re-adoption.")
+        return 2
+    try:
+        result = adopt_project(root, client_id=args.client_id, description=args.description)
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    print(f"StellarCode project created and bound: {result['project_id']}")
+    return 0
+
+
+def cmd_stellar_sync(args) -> int:
+    root = _target(args.target)
+    _require_config(root)
+    snapshot = discover_project(root, run_audit=not args.no_audit)
+    write_discovery(root, snapshot)
+    try:
+        result = sync_discovery(root, snapshot, dry_run=args.dry_run)
+    except StellarError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    print(f"Stellar sync: {result.get('status')}")
+    print("Native: " + (", ".join(result.get("native", [])) or "-"))
+    print("Bridge: " + (", ".join(result.get("bridge", [])) or "-"))
+    print("Missing: " + (", ".join(result.get("missing", [])) or "-"))
+    return 0
 
 
 def cmd_stellar_bind(args) -> int:
@@ -614,6 +703,7 @@ def build_parser() -> argparse.ArgumentParser:
     init.add_argument("--non-interactive", action="store_true")
     init.add_argument("--stage"); init.add_argument("--type"); init.add_argument("--criticality"); init.add_argument("--traffic"); init.add_argument("--budget")
     init.add_argument("--backend"); init.add_argument("--frontend"); init.add_argument("--database"); init.add_argument("--edge"); init.add_argument("--orchestration")
+    init.add_argument("--ownership", choices=["internal","external_client"]); init.add_argument("--engagement", choices=["greenfield","migration","refactor","modernization","maintenance","audit_only"]); init.add_argument("--client-id", type=int)
     init.set_defaults(func=cmd_init)
 
     d = sub.add_parser("detectar", help="Detecta stack"); d.add_argument("--target", default="."); d.set_defaults(func=cmd_detect)
@@ -625,7 +715,7 @@ def build_parser() -> argparse.ArgumentParser:
     sr = sub.add_parser("revisar-stack", help="Evalúa Stack Fit"); sr.add_argument("--target", default="."); sr.set_defaults(func=cmd_stack)
     pl = sub.add_parser("planificar", help="Crea work item trazable"); pl.add_argument("title"); pl.add_argument("--target", default="."); pl.add_argument("--type", default="feature"); pl.add_argument("--priority", choices=["low","medium","high","critical"], default="medium"); pl.add_argument("--description", default=""); pl.add_argument("--acceptance", action="append"); pl.add_argument("--stellar", action="store_true", help="Crea primero la tarea en StellarCode MCP"); pl.set_defaults(func=cmd_plan)
     tr = sub.add_parser("traza", help="Sincroniza traza con Git"); tr.add_argument("--target", default="."); tr.add_argument("--environment", default="local"); tr.add_argument("--stellar", action="store_true", help="Sincroniza snapshot del Kanban/identidad"); tr.set_defaults(func=cmd_trace)
-    sb = sub.add_parser("stellar-bind", help="Vincula el proyecto local con StellarCode MCP"); sb.add_argument("--target", default="."); sb.add_argument("--project-id", type=int, required=True); sb.add_argument("--url", default="https://api.stellarcodelabs.lat/mcp"); sb.add_argument("--token-env", default="STELLARCODE_TOKEN"); sb.set_defaults(func=cmd_stellar_bind)
+    ds = sub.add_parser("descubrir", help="Genera baseline de adopción/discovery"); ds.add_argument("--target", default="."); ds.add_argument("--no-audit", action="store_true"); ds.add_argument("--stellar", action="store_true"); ds.add_argument("--dry-run", action="store_true"); ds.set_defaults(func=cmd_discover)\n    sc = sub.add_parser("stellar-capabilities", help="Muestra qué dominios soporta el MCP actual"); sc.add_argument("--target", default="."); sc.set_defaults(func=cmd_stellar_capabilities)\n    sa = sub.add_parser("stellar-adopt", help="Crea el proyecto en StellarCode y lo vincula localmente"); sa.add_argument("--target", default="."); sa.add_argument("--client-id", type=int); sa.add_argument("--description"); sa.add_argument("--force", action="store_true"); sa.set_defaults(func=cmd_stellar_adopt)\n    sy = sub.add_parser("stellar-sync", help="Sincroniza discovery usando capacidades MCP disponibles"); sy.add_argument("--target", default="."); sy.add_argument("--dry-run", action="store_true"); sy.add_argument("--no-audit", action="store_true"); sy.set_defaults(func=cmd_stellar_sync)\n    sb = sub.add_parser("stellar-bind", help="Vincula el proyecto local con StellarCode MCP"); sb.add_argument("--target", default="."); sb.add_argument("--project-id", type=int, required=True); sb.add_argument("--url", default="https://api.stellarcodelabs.lat/mcp"); sb.add_argument("--token-env", default="STELLARCODE_TOKEN"); sb.set_defaults(func=cmd_stellar_bind)
     ss = sub.add_parser("stellar-status", help="Muestra identidad y permisos efectivos en StellarCode"); ss.add_argument("--target", default="."); ss.set_defaults(func=cmd_stellar_status)
     sp = sub.add_parser("stellar-projects", help="Lista proyectos accesibles al usuario StellarCode"); sp.add_argument("--target", default="."); sp.set_defaults(func=cmd_stellar_projects)
     rl = sub.add_parser("roles", help="Lista roles y permisos de proyecto"); rl.add_argument("--target", default="."); rl.set_defaults(func=cmd_roles)
