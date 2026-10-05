@@ -11,7 +11,7 @@ import yaml
 from . import __version__
 from .audit import audit_project
 from .config import build_config, load_config, save_config
-from .config_schema import config_summary, migrate_config_file, validate_config
+from .config_schema import CURRENT_SCHEMA_VERSION, config_summary, migrate_config_file, validate_config
 from .findings import load_findings, normalize_legacy_finding, reconcile_findings, save_findings, update_finding_status
 from .gates import evaluate_gate
 from .detector import detect_stack
@@ -496,7 +496,10 @@ def cmd_validate(args) -> int:
         for error in errors:
             print(f"ERROR {error['path']}: {error['message']}")
         return 6
-    print(f"Config valid (schema={config_summary(cfg)['schema_version']})")
+    schema_version = config_summary(cfg)["schema_version"]
+    print(f"Config valid (schema={schema_version})")
+    if schema_version < CURRENT_SCHEMA_VERSION:
+        print(f"WARN: schema {schema_version} is supported; migration to {CURRENT_SCHEMA_VERSION} is available.")
     return 0
 
 
@@ -516,6 +519,8 @@ def cmd_config(args) -> int:
         print(f"Config {mode}: schema {result['from']} -> {result['to']}")
         if args.check and result.get("diff"):
             print(result["diff"])
+        if result.get("backup"):
+            print(f"Backup: {result['backup']}")
         if not args.check:
             errors = validate_config(result["config"])
             if errors:
@@ -543,7 +548,11 @@ def cmd_findings(args) -> int:
     if not args.id or not args.status:
         print("ERROR: findings status requires --id and --status")
         return 2
-    updated = update_finding_status(root, args.id, args.status, args.reason, args.approved_by, args.expires_at)
+    try:
+        updated = update_finding_status(root, args.id, args.status, args.reason, args.approved_by, args.expires_at)
+    except ValueError as exc:
+        print(f"ERROR: {exc}")
+        return 2
     if not updated:
         print(f"ERROR: finding not found: {args.id}")
         return 7
