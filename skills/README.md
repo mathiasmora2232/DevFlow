@@ -25,3 +25,6 @@
 - [`sincronizar-traza`](./sincronizar-traza/SKILL.md) — Sincroniza TRACE con evidencia real de Git, PR, CI y deploy.
 - [`changelog`](./changelog/SKILL.md) — Mantiene changelog de cambios visibles/relevantes de producto.
 - [`siguiente-accion`](./siguiente-accion/SKILL.md) — Determina la próxima acción de mayor valor a partir del estado del proyecto.
+- [`doctor`](./doctor/SKILL.md) — Diagnostica entorno, tooling y espacio libre antes de operar.
+- [`docs`](./docs/SKILL.md) — Audita documentación técnica y operativa.
+- [`secretos`](./secretos/SKILL.md) — Detecta posibles secretos sin exponerlos en salida.

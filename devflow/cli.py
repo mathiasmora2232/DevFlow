@@ -12,6 +12,9 @@ from . import __version__
 from .audit import audit_project
 from .config import build_config, load_config, save_config
 from .detector import detect_stack
+from .doctor import doctor_project, doctor_markdown
+from .docs_audit import audit_docs, docs_markdown
+from .secrets_scan import scan_secrets, secrets_markdown, should_fail
 from .report import audit_markdown, stack_review_markdown
 from .scoring import weighted_score, evidence_confidence
 from .stackfit import evaluate_stack_fit
@@ -27,6 +30,9 @@ ALIASES = {
     "/traza": "traza", "trace": "traza",
     "/estado": "estado", "status": "estado",
     "/detectar": "detectar", "detect": "detectar",
+    "/doctor": "doctor",
+    "/docs": "docs",
+    "/secretos": "secretos", "secrets": "secretos",
 }
 
 
@@ -162,6 +168,62 @@ def cmd_trace(args) -> int:
     return 0
 
 
+def _write_named_report(root: Path, prefix: str, result: dict, markdown: str) -> tuple[Path, Path]:
+    reports = root / "ops" / "reports"
+    reports.mkdir(parents=True, exist_ok=True)
+    stamp = datetime.now().astimezone().strftime("%Y%m%d-%H%M%S")
+    json_path = reports / f"{prefix}-{stamp}.json"
+    md_path = reports / f"{prefix}-{stamp}.md"
+    json_path.write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+    md_path.write_text(markdown, encoding="utf-8")
+    (reports / f"{prefix}-latest.json").write_text(json.dumps(result, indent=2, ensure_ascii=False), encoding="utf-8")
+    (reports / f"{prefix}-latest.md").write_text(markdown, encoding="utf-8")
+    return json_path, md_path
+
+
+def cmd_doctor(args) -> int:
+    root = _target(args.target)
+    result = doctor_project(root)
+    _, md_path = _write_named_report(root, "doctor", result, doctor_markdown(result))
+    print(f"Readiness: {result['readiness_score']}/100 — {'READY' if result['ready'] else 'BLOCKED'}")
+    print(f"Free disk: {result['free_disk_gb']} GB")
+    for blocker in result["blockers"]:
+        print(f"BLOCKER: {blocker['name']} — {blocker['detail']}")
+    for warning in result["warnings"]:
+        print(f"WARN: {warning['name']} — {warning['detail']}")
+    print(f"Report: {md_path}")
+    return 2 if args.strict and not result["ready"] else 0
+
+
+def cmd_docs(args) -> int:
+    root = _target(args.target)
+    result = audit_docs(root)
+    _, md_path = _write_named_report(root, "docs", result, docs_markdown(result))
+    print(f"Documentation: {result['documentation_score']}/100")
+    for finding in result["findings"]:
+        print(f"{finding['severity'].upper()}: {finding['id']} — {finding['message']}")
+    print(f"Report: {md_path}")
+    if args.min_score is not None and result["documentation_score"] < args.min_score:
+        return 3
+    return 0
+
+
+def cmd_secrets(args) -> int:
+    root = _target(args.target)
+    result = scan_secrets(root)
+    _, md_path = _write_named_report(root, "secrets", result, secrets_markdown(result))
+    counts = result["counts"]
+    print(f"Secret Hygiene: {result['secret_hygiene_score']}/100")
+    print(f"Findings: critical={counts['critical']} high={counts['high']} medium={counts['medium']} low={counts['low']}")
+    for finding in result["findings"][:20]:
+        loc = f"{finding['file']}:{finding['line']}" if finding.get("line") else finding["file"]
+        print(f"{finding['severity'].upper()}: {finding['id']} — {loc} — {finding['preview']}")
+    if len(result["findings"]) > 20:
+        print(f"... {len(result['findings']) - 20} more findings in report")
+    print(f"Report: {md_path}")
+    return 4 if should_fail(result, args.fail_on) else 0
+
+
 def cmd_status(args) -> int:
     root = _target(args.target); cfg = _require_config(root)
     detected = detect_stack(root)
@@ -192,6 +254,9 @@ def build_parser() -> argparse.ArgumentParser:
     init.set_defaults(func=cmd_init)
 
     d = sub.add_parser("detectar", help="Detecta stack"); d.add_argument("--target", default="."); d.set_defaults(func=cmd_detect)
+    doc = sub.add_parser("doctor", help="Diagnostica entorno y readiness"); doc.add_argument("--target", default="."); doc.add_argument("--strict", action="store_true"); doc.set_defaults(func=cmd_doctor)
+    docs = sub.add_parser("docs", help="Audita documentación del proyecto"); docs.add_argument("--target", default="."); docs.add_argument("--min-score", type=float); docs.set_defaults(func=cmd_docs)
+    sec = sub.add_parser("secretos", help="Busca posibles secretos sin mostrar valores completos"); sec.add_argument("--target", default="."); sec.add_argument("--fail-on", choices=["never","critical","high","medium","low"], default="never"); sec.set_defaults(func=cmd_secrets)
     a = sub.add_parser("auditar", help="Auditoría estática integral"); a.add_argument("--target", default="."); a.set_defaults(func=cmd_audit)
     s = sub.add_parser("puntuar", help="Muestra score actual"); s.add_argument("--target", default="."); s.add_argument("--refresh", action="store_true"); s.set_defaults(func=cmd_score)
     sr = sub.add_parser("revisar-stack", help="Evalúa Stack Fit"); sr.add_argument("--target", default="."); sr.set_defaults(func=cmd_stack)

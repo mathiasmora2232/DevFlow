@@ -1,6 +1,6 @@
 # DevFlow Core — Implementation Status
 
-## v0.2 implemented
+## v0.3 implemented
 
 - 25 canonical skills.
 - CLI package `devflow`.
@@ -13,7 +13,10 @@
 - `/planificar`: persistent work IDs + backlog/trace update.
 - `/traza`: Git snapshot synchronization.
 - `/estado`: concise project state.
-- 6 automated tests.
+- `/doctor`: environment/tooling/disk readiness.
+- `/docs`: documentation coverage score/report.
+- `/secretos`: redacted secret scanning + CI threshold.
+- 10 automated tests.
 - Regression protection against stack detection from documentation-only mentions.
 
 ## Intentionally not claimed as implemented yet

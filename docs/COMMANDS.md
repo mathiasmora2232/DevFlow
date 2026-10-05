@@ -1,8 +1,8 @@
 # Command Router
 
-Los slash commands son la interfaz humana/canónica. El CLI v0.2 acepta directamente varios de ellos como argumentos (`devflow /auditar`).
+Los slash commands son la interfaz humana/canónica. El CLI v0.3 acepta directamente varios de ellos como argumentos (`devflow /auditar`).
 
-## Operativos en CLI v0.2
+## Operativos en CLI v0.3
 
 | Comando | Alias CLI | Skill |
 |---|---|---|
@@ -14,6 +14,9 @@ Los slash commands son la interfaz humana/canónica. El CLI v0.2 acepta directam
 | `/revisar-stack` | `stack-review` | `revisar-stack` |
 | `/traza` | `trace` | `sincronizar-traza` |
 | `/detectar` | `detect` | detector interno |
+| `/doctor` | `doctor` | `doctor` |
+| `/docs` | `docs` | `docs` |
+| `/secretos` | `secrets` | `secretos` |
 
 ## Skills disponibles; automatización CLI/provider pendiente
 
