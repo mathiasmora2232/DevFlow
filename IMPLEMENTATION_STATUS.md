@@ -21,6 +21,8 @@
 - Expanded automated test suite covering CLI, config migrations, findings, gates, providers, sync/idempotency and regressions.
 - StellarCode MCP client and project binding.
 - `/stellar-status`: authenticated identity, project role and permissions.
+- `devflow stellar-login`: web-approved device login (Google/GitHub/password+MFA on StellarCode), agent two-step mode (`--no-wait --json` / `--wait`), local 0600 credential store outside the repo; `stellar-auth`, `stellar-logout`.
+- `devflow inicio`: session bootstrap (config, binding, auth) with agent login protocol and optional Claude Code SessionStart hook (`--install-hook`).
 - `/kanban`: shared task board read/move operations.
 - Project discovery, role listing, member/role management and project decisions via StellarCode MCP.
 - `/planificar --stellar`: remote-first backlog creation.

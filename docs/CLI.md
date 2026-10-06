@@ -78,20 +78,31 @@ Busca patrones de credenciales y archivos sensibles. Los valores se redactan en 
 
 Vincula un repo local al proyecto operativo en StellarCode:
 
+### Login
+
+```bash
+devflow inicio                         # estado de config, vínculo y sesión al arrancar
+devflow stellar-login                  # enlace + código; abre el navegador; inicia sesión con Google y aprueba
+devflow stellar-login --project-id 10  # login + stellar-bind
+devflow stellar-auth                   # sesión válida y vencimiento (exit 6 si no hay)
+devflow stellar-logout                 # borra la credencial local
+devflow inicio --install-hook          # SessionStart hook de Claude Code en .claude/settings.json
+```
+
+Agentes (sin terminal visible para la persona):
+
+```bash
+devflow stellar-login --no-wait --json   # devuelve login_url + user_code; mostrar el enlace en el chat
+devflow stellar-login --wait --timeout 540
+```
+
+El login usa el flujo de aprobación de StellarCode (`/api/mcp-connect`): la persona entra en la web (Google, GitHub o correo + MFA) y aprueba; el CLI recibe un token MCP de ≤ 24 h guardado en `~/.devflow/stellar.env` (permisos 600, mismo formato que `npm run devflow:login` de StellarCode Studio). Solo administradores pueden aprobar.
+
+CI / service accounts siguen usando una variable de entorno, que tiene prioridad sobre la credencial local:
+
 ```bash
 devflow stellar-bind --project-id 10
-```
-
-Configura el JWT real del usuario fuera del repo:
-
-```bash
-export STELLARCODE_TOKEN="..."
-```
-
-PowerShell:
-
-```powershell
-$env:STELLARCODE_TOKEN="..."
+export STELLARCODE_TOKEN="..."      # PowerShell: $env:STELLARCODE_TOKEN="..."
 ```
 
 Comandos:

@@ -208,7 +208,7 @@ La auditoría estática sigue siendo conservadora y ahora mantiene findings pers
 StellarCode Studio es el **hub operacional obligatorio** para proyectos gestionados por DevFlow. Los análisis locales pueden ejecutarse offline, pero su estado queda pendiente de sincronización hasta volcar stack, auditorías, findings, infraestructura/config metadata, fases, backlog, evidencia y tiempo trabajado al MCP.
 
 
-DevFlow v0.4+ puede usar `https://api.stellarcodelabs.lat/mcp` como capa operacional compartida. El JWT del usuario se obtiene desde la variable de entorno `STELLARCODE_TOKEN`; nunca se persiste en `.devflow.yml`.
+DevFlow v0.4+ puede usar `https://api.stellarcodelabs.lat/mcp` como capa operacional compartida. Para iniciar sesión: `devflow stellar-login` (enlace a la web de StellarCode con login de Google y aprobación; el token MCP de ≤ 24 h queda en `~/.devflow/stellar.env`, fuera del repo). `devflow inicio` muestra el estado al arrancar y `devflow inicio --install-hook` lo ejecuta automáticamente en cada sesión de Claude Code. En CI, `STELLARCODE_TOKEN` sigue funcionando y tiene prioridad. El token nunca se persiste en `.devflow.yml`.
 
 La seguridad real vive en StellarCode: usuario autenticado + membresía del proyecto + rol + permiso atómico. Git continúa siendo la fuente de evidencia técnica y StellarCode el estado vivo del backlog/Kanban.
 

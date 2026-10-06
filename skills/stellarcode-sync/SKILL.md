@@ -14,23 +14,24 @@ description: Usa StellarCode MCP como fuente operacional compartida para identid
 - El servidor MCP aplica RBAC; el cliente no es una frontera de seguridad.
 - Backlog sync es `remote_first`: una tarea remota debe existir antes de reflejarse localmente.
 
-## Binding
+## Login y binding
+
+Antes de cualquier operación remota: `devflow inicio` (o `devflow stellar-auth`). Si no hay sesión, aplicar el skill [`stellar-login`](../stellar-login/SKILL.md): el agente genera el enlace con `devflow stellar-login --no-wait --json`, se lo muestra a la persona (login con Google en la web + aprobar) y espera con `devflow stellar-login --wait`.
 
 ```bash
-devflow stellar-bind --project-id 10
+devflow stellar-login --project-id 10   # login web + bind en un paso (terminal interactiva)
+devflow stellar-bind --project-id 10    # solo bind, si ya hay sesión
 ```
 
-Luego exportar un JWT real de StellarCode:
+CI / service accounts: exportar `STELLARCODE_TOKEN` (o la variable de `stellarcode.auth.token_env`); tiene prioridad sobre la credencial del login web.
 
-```bash
-export STELLARCODE_TOKEN="..."
-```
+## Errores de autenticación
 
-PowerShell:
-
-```powershell
-$env:STELLARCODE_TOKEN="..."
-```
+| Mensaje | Acción |
+|---|---|
+| `Not logged in to StellarCode` | protocolo `stellar-login` |
+| `StellarCode session expired` | protocolo `stellar-login` (el token dura ≤ 24 h) |
+| `401`/`403` en una tool MCP con sesión válida | falta de permiso RBAC: informar, no reintentar |
 
 ## Uso
 
