@@ -10,7 +10,9 @@ description: Enruta comandos e intención hacia el skill canónico correcto.
 1. Identifica la intención principal.
 2. Usa `docs/COMMANDS.md` para comandos explícitos.
 3. Si varias skills aplican, selecciona una primaria y encadena solo las necesarias.
-4. No ejecutes deploy, migraciones destructivas o carga productiva como efecto secundario de una consulta.
+4. Al iniciar trabajo en un proyecto gestionado, ejecuta `devflow inicio`; si reporta `Auth: sin sesión` o un comando StellarCode falla por token, aplica `stellar-login` antes de continuar.
+5. Intenciones como "conectar", "loguear", "iniciar sesión", "login MCP/Stellar" → `stellar-login`.
+6. No ejecutes deploy, migraciones destructivas o carga productiva como efecto secundario de una consulta.
 
 ## Reglas compartidas
 

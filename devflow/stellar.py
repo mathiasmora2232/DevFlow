@@ -9,6 +9,7 @@ from typing import Any
 import yaml
 
 from .config import load_config
+from .stellar_auth import load_credentials, resolve_token
 
 
 class StellarError(RuntimeError):
@@ -21,18 +22,26 @@ def stellar_config(root: Path, require_project: bool = True, allow_disabled: boo
     if not stellar.get("enabled") and not allow_disabled:
         raise StellarError("StellarCode integration is disabled. Run `devflow stellar-bind --project-id <id>` or `devflow stellar-adopt`.")
     if not stellar.get("mcp_url"):
-        raise StellarError("stellarcode.mcp_url is missing in .devflow.yml")
+        creds = load_credentials()
+        if not (creds and creds.get("mcp_url")):
+            raise StellarError("stellarcode.mcp_url is missing in .devflow.yml. Run `devflow stellar-login` or `devflow stellar-bind`.")
+        stellar = {**stellar, "mcp_url": creds["mcp_url"]}
     if require_project and not stellar.get("project_id"):
         raise StellarError("stellarcode.project_id is missing. Run `devflow stellar-bind --project-id <id>`.")
     return stellar
 
 
 def stellar_token(stellar: dict[str, Any]) -> str:
-    env_name = stellar.get("auth", {}).get("token_env") or "STELLARCODE_TOKEN"
-    token = os.getenv(env_name, "").strip()
-    if not token:
-        raise StellarError(f"Missing StellarCode access token in environment variable {env_name}.")
-    return token
+    env_name = (stellar.get("auth") or {}).get("token_env") or "STELLARCODE_TOKEN"
+    resolved = resolve_token(env_name)
+    if resolved.token:
+        return resolved.token
+    if resolved.expired_path:
+        raise StellarError("StellarCode session expired. Run `devflow stellar-login` (opens the web approval, Google sign-in supported).")
+    raise StellarError(
+        "Not logged in to StellarCode. Run `devflow stellar-login` "
+        f"(or export a token in {env_name} for CI/service accounts)."
+    )
 
 
 async def _call_tool_async(url: str, token: str, tool: str, arguments: dict[str, Any], client_name: str) -> dict[str, Any]:

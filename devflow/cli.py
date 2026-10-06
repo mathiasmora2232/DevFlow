@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
 import shutil
 import sys
+import webbrowser
 from datetime import datetime
 from pathlib import Path
 import yaml
@@ -24,6 +26,7 @@ from .scoring import weighted_score, evidence_confidence
 from .stackfit import evaluate_stack_fit
 from .trace import ensure_ops, sync_trace, next_work_id, add_work
 from .stellar import (StellarError, adopt_project, bind_project, call_tool as stellar_call_tool, capability_matrix, choose_next_task, discovery_sync_plan, list_tools as stellar_list_tools, stellar_config, sync_discovery, write_stellar_snapshot)
+from .stellar_auth import (StellarAuthError, api_base_from_mcp_url, auth_status, clear_credentials, default_urls, load_pending, public_ticket, start_login, wait_for_approval)
 from .utils import slugify
 
 ALIASES = {
@@ -53,6 +56,10 @@ ALIASES = {
     "/validar": "validate", "validate": "validate",
     "/findings": "findings", "findings": "findings",
     "/gate": "gate", "gate": "gate",
+    "/login": "stellar-login", "login": "stellar-login", "/stellar-login": "stellar-login",
+    "/logout": "stellar-logout", "logout": "stellar-logout",
+    "/stellar-auth": "stellar-auth", "whoami": "stellar-auth",
+    "/inicio": "inicio", "start": "inicio",
 }
 
 
@@ -742,6 +749,190 @@ def cmd_status(args) -> int:
     return 0
 
 
+def _login_endpoints(args, root: Path) -> tuple[str, str]:
+    profile = "dev" if getattr(args, "dev", False) else None
+    api_default, web_default = default_urls(profile)
+    cfg = load_config(root) or {}
+    stellar = cfg.get("stellarcode") or {}
+    api = args.api or api_base_from_mcp_url(stellar.get("mcp_url")) or api_default
+    web = args.web or stellar.get("web_url") or web_default
+    return api.rstrip("/"), web.rstrip("/")
+
+
+def _print_login_ticket(ticket: dict, *, waiting: bool) -> None:
+    print("STELLARCODE LOGIN")
+    print("1. Abre este enlace e inicia sesión (Google, GitHub o correo + MFA):")
+    print(f"   {ticket['login_url']}")
+    print(f"   Si ya tienes sesión en la web: {ticket['approve_url']}")
+    print(f"2. Confirma que la web muestra el código {ticket['user_code']} y pulsa Aprobar.")
+    print(f"   Vence: {ticket['expires_at']}")
+    if waiting:
+        print("Esperando aprobación… (Ctrl+C para cancelar)")
+    else:
+        print("Cuando apruebes, termina con: devflow stellar-login --wait")
+
+
+def _finish_login(args, root: Path, result: dict) -> int:
+    if args.json:
+        print(json.dumps(result, ensure_ascii=False, indent=2))
+    if result["status"] == "pending":
+        if not args.json:
+            print("Aún sin aprobar. Repite: devflow stellar-login --wait")
+        return 7
+    if not args.json:
+        print(f"Conectado a StellarCode. Token MCP válido {result['expires_in_hours']:g} h (vence {result['expires_at']}).")
+        print(f"Escrituras: {'habilitadas' if result.get('writes_enabled') else 'solo lectura'}")
+        print(f"Credencial local: {result['credentials_path']} (fuera del repo, permisos 600)")
+    if args.project_id:
+        if not load_config(root):
+            print("No hay .devflow.yml en el target; omito stellar-bind.")
+        else:
+            bind_project(root, args.project_id, result.get("mcp_url"))
+            if not args.json:
+                print(f"Proyecto vinculado: project_id={args.project_id}")
+    return 0
+
+
+def cmd_stellar_login(args) -> int:
+    root = _target(args.target)
+    profile = "dev" if args.dev else None
+    try:
+        if args.wait:
+            pending = load_pending(profile)
+            if not pending:
+                print("No hay un login pendiente (o venció). Inicia con: devflow stellar-login --no-wait")
+                return 6
+            return _finish_login(args, root, wait_for_approval(pending, profile=profile, timeout=args.timeout))
+
+        api, web = _login_endpoints(args, root)
+        client = args.nombre or f"DevFlow en {platform.node() or 'este equipo'}"
+        pending = start_login(api_url=api, web_url=web, client_name=client, hours=args.horas, profile=profile)
+        ticket = public_ticket(pending)
+        if args.no_wait:
+            if args.json:
+                print(json.dumps({"status": "pending", **ticket}, ensure_ascii=False, indent=2))
+            else:
+                _print_login_ticket(ticket, waiting=False)
+            return 0
+        if args.json:
+            print(json.dumps({"status": "pending", **ticket}, ensure_ascii=False), flush=True)
+        else:
+            _print_login_ticket(ticket, waiting=True)
+        sys.stdout.flush()
+        if not args.no_open:
+            try:
+                webbrowser.open(ticket["login_url"], new=2)
+            except Exception:  # noqa: BLE001 - headless shells simply keep the printed link
+                pass
+        return _finish_login(args, root, wait_for_approval(pending, profile=profile, timeout=args.timeout))
+    except StellarAuthError as exc:
+        print(f"ERROR: {exc}")
+        return 5
+    except KeyboardInterrupt:
+        print("\nLogin cancelado. El enlace sigue válido unos minutos: devflow stellar-login --wait")
+        return 130
+
+
+def cmd_stellar_logout(args) -> int:
+    removed = clear_credentials("dev" if args.dev else None)
+    if removed:
+        for path in removed:
+            print(f"Eliminado: {path}")
+        print("El token sigue vigente en el servidor hasta que venza; revócalo en Admin → MCP → Tokens si se filtró.")
+    else:
+        print("No había credenciales locales de StellarCode.")
+    return 0
+
+
+def _token_env_for(root: Path) -> str | None:
+    cfg = load_config(root) or {}
+    return ((cfg.get("stellarcode") or {}).get("auth") or {}).get("token_env")
+
+
+def cmd_stellar_auth(args) -> int:
+    root = _target(args.target)
+    status = auth_status(_token_env_for(root), "dev" if args.dev else None)
+    if args.json:
+        print(json.dumps(status, ensure_ascii=False, indent=2))
+    else:
+        print("STELLARCODE AUTH")
+        if status["authenticated"]:
+            print(f"Estado: conectado ({status['source']})")
+            if status["expires_at"]:
+                print(f"Vence: {status['expires_at']} (~{status['remaining_minutes']} min)")
+        else:
+            print(f"Estado: sin sesión ({status.get('reason')})")
+            print("Inicia sesión: devflow stellar-login")
+    return 0 if status["authenticated"] else 6
+
+
+AGENT_LOGIN_PROTOCOL = (
+    "AGENT LOGIN PROTOCOL: run `devflow stellar-login --no-wait --json`, show the person the `login_url` "
+    "as a clickable link (Google sign-in) plus the `user_code`, ask them to approve it on the web, then run "
+    "`devflow stellar-login --wait --timeout 540` (allow ~10 min). Never ask the person to paste a token into chat."
+)
+
+
+def _hook_settings_path(root: Path) -> Path:
+    return root / ".claude" / "settings.json"
+
+
+def install_session_hook(root: Path) -> tuple[Path, bool]:
+    path = _hook_settings_path(root)
+    settings = json.loads(path.read_text(encoding="utf-8")) if path.is_file() else {}
+    command = 'devflow inicio --hook --target "$CLAUDE_PROJECT_DIR"'
+    groups = settings.setdefault("hooks", {}).setdefault("SessionStart", [])
+    if any(h.get("command") == command for g in groups for h in g.get("hooks", [])):
+        return path, False
+    groups.append({"hooks": [{"type": "command", "command": command, "timeout": 30}]})
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(settings, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return path, True
+
+
+def cmd_inicio(args) -> int:
+    root = _target(args.target)
+    if args.install_hook:
+        path, created = install_session_hook(root)
+        print(f"SessionStart hook {'instalado' if created else 'ya presente'}: {path}")
+        return 0
+
+    cfg = load_config(root) or {}
+    stellar = cfg.get("stellarcode") or {}
+    status = auth_status(_token_env_for(root))
+    lines = [f"DEVFLOW {__version__} · {root.name}"]
+    if not cfg:
+        lines.append("Config: sin .devflow.yml → ejecutar `devflow /nuevo-proyecto` (o `/descubrir` si el repo ya existe).")
+    else:
+        project = cfg.get("project") or {}
+        lines.append(f"Proyecto: {project.get('name') or root.name} ({project.get('ownership') or '?'} / {project.get('engagement') or '?'})")
+        if stellar.get("enabled") and stellar.get("project_id"):
+            lines.append(f"StellarCode: vinculado a project_id={stellar['project_id']}")
+        else:
+            lines.append("StellarCode: sin vincular → `devflow stellar-adopt` (proyecto nuevo) o `devflow stellar-bind --project-id <id>`.")
+
+    if status["authenticated"]:
+        remaining = status.get("remaining_minutes")
+        lines.append(f"Auth: conectado ({status['source'].split(':', 1)[0]}" + (f", ~{remaining} min restantes)" if remaining is not None else ")"))
+        if remaining is not None and remaining < 120:
+            lines.append("Auth: el token vence pronto → renovar con `devflow stellar-login`.")
+        if stellar.get("project_id"):
+            lines.append("Siguiente: `devflow /stellar-status`, `devflow /siguiente` y `devflow time start --task-id <id>` (time tracking obligatorio).")
+    else:
+        lines.append(f"Auth: sin sesión StellarCode ({status.get('reason')}). Modo offline/pending-sync hasta iniciar sesión.")
+        pending = status.get("pending_login")
+        if pending:
+            lines.append(f"Login pendiente: código {pending.get('user_code')} · {pending.get('login_url')} → luego `devflow stellar-login --wait`.")
+        lines.append(AGENT_LOGIN_PROTOCOL)
+
+    print("\n".join(lines))
+    if args.login and not status["authenticated"] and not args.hook:
+        login_args = argparse.Namespace(target=str(root), api=None, web=None, horas=24, nombre=None, no_open=False,
+                                        no_wait=False, wait=False, json=False, dev=False, project_id=None, timeout=None)
+        return cmd_stellar_login(login_args)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="devflow", description="DevFlow Core CLI")
     p.add_argument("--version", action="version", version=f"devflow {__version__}")
@@ -781,6 +972,28 @@ def build_parser() -> argparse.ArgumentParser:
     cf = sub.add_parser("config", help="Muestra o migra configuración DevFlow"); cf.add_argument("action", choices=["show","migrate"]); cf.add_argument("--target", default="."); cf.add_argument("--check", action="store_true"); cf.set_defaults(func=cmd_config)
     fd = sub.add_parser("findings", help="Consulta o actualiza lifecycle de findings"); fd.add_argument("action", nargs="?", choices=["list","status"], default="list"); fd.add_argument("--target", default="."); fd.add_argument("--id"); fd.add_argument("--status", choices=["open","acknowledged","planned","in_progress","fixed","verified","closed","accepted_risk","false_positive","suppressed"]); fd.add_argument("--severity", choices=["critical","high","medium","low","info"]); fd.add_argument("--reason"); fd.add_argument("--approved-by"); fd.add_argument("--expires-at"); fd.set_defaults(func=cmd_findings)
     gt = sub.add_parser("gate", help="Evalúa quality gate determinista"); gt.add_argument("gate", choices=["pull_request","staging","production","release"]); gt.add_argument("--target", default="."); gt.add_argument("--tests", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--build", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--rollback", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--healthcheck", action=argparse.BooleanOptionalAction, default=None); gt.add_argument("--verified-ci", dest="verified_ci", action=argparse.BooleanOptionalAction, default=None); gt.set_defaults(func=cmd_gate)
+    lg = sub.add_parser("stellar-login", help="Inicia sesión en StellarCode aprobando en la web (Google/GitHub/correo)")
+    lg.add_argument("--target", default=".")
+    lg.add_argument("--api", help="Base de la API (por defecto deriva de stellarcode.mcp_url)")
+    lg.add_argument("--web", help="Base de la web para aprobar (por defecto https://app.stellarcodelabs.lat)")
+    lg.add_argument("--horas", type=int, default=24, help="Vida del token MCP (1-24 h)")
+    lg.add_argument("--nombre", help="Nombre del cliente que verá la web")
+    lg.add_argument("--no-open", action="store_true", help="No abrir el navegador automáticamente")
+    lg.add_argument("--no-wait", action="store_true", help="Solo genera el enlace y sale (para agentes); termina con --wait")
+    lg.add_argument("--wait", action="store_true", help="Espera la aprobación de un login iniciado con --no-wait")
+    lg.add_argument("--timeout", type=float, help="Segundos máximos de espera (por defecto hasta que venza el código)")
+    lg.add_argument("--json", action="store_true", help="Salida JSON legible por agentes")
+    lg.add_argument("--dev", action="store_true", help="Usa la API/web de desarrollo y el perfil de credenciales dev")
+    lg.add_argument("--project-id", type=int, help="Ejecuta stellar-bind al terminar")
+    lg.set_defaults(func=cmd_stellar_login)
+    lo = sub.add_parser("stellar-logout", help="Borra la credencial local de StellarCode"); lo.add_argument("--dev", action="store_true"); lo.set_defaults(func=cmd_stellar_logout)
+    au = sub.add_parser("stellar-auth", help="Muestra si hay sesión StellarCode válida y cuándo vence"); au.add_argument("--target", default="."); au.add_argument("--json", action="store_true"); au.add_argument("--dev", action="store_true"); au.set_defaults(func=cmd_stellar_auth)
+    ini = sub.add_parser("inicio", help="Arranque de sesión: config, vínculo StellarCode y estado de login")
+    ini.add_argument("--target", default=".")
+    ini.add_argument("--login", action="store_true", help="Si no hay sesión, lanza stellar-login")
+    ini.add_argument("--hook", action="store_true", help="Modo SessionStart hook: nunca bloquea")
+    ini.add_argument("--install-hook", action="store_true", help="Instala el SessionStart hook en .claude/settings.json del target")
+    ini.set_defaults(func=cmd_inicio)
     st = sub.add_parser("estado", help="Resumen de estado"); st.add_argument("--target", default="."); st.set_defaults(func=cmd_status)
     return p
 

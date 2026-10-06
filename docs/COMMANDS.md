@@ -17,6 +17,10 @@ Los slash commands son la interfaz humana/canónica. El CLI v0.5 acepta directam
 | `/doctor` | `doctor` | `doctor` |
 | `/docs` | `docs` | `docs` |
 | `/secretos` | `secrets` | `secretos` |
+| `/inicio` | `start`, `inicio` | `stellar-login` |
+| `/login` | `stellar-login` | `stellar-login` |
+| `/logout` | `stellar-logout` | `stellar-login` |
+| `/stellar-auth` | `whoami` | `stellar-login` |
 | `/stellar-status` | `stellar-status` | `stellarcode-sync` |
 | `/proyectos` | `stellar-projects` | `stellarcode-sync` |
 | `/roles` | `roles` | `stellarcode-sync` |

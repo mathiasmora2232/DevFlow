@@ -4,6 +4,11 @@
 
 ### Added
 
+- `devflow stellar-login`: StellarCode login through the web approval flow (Google sign-in supported) with an agent-friendly two-step mode (`--no-wait --json`, then `--wait`); token stored in `~/.devflow/stellar.env` (0600), compatible with StellarCode Studio `npm run devflow:login`.
+- `devflow stellar-auth`, `devflow stellar-logout` and `devflow inicio` (session bootstrap, `--install-hook` for a Claude Code SessionStart hook).
+- StellarCode token resolution now falls back to the local login store after `token_env`, `STELLARCODE_TOKEN` and `STELLAR_MCP_TOKEN`.
+- `stellar-login` skill with the agent login protocol; router and `stellarcode-sync` skills route auth failures to it.
+
 - DevFlow CLI v0.5 Foundations.
 - Canonical domain contracts and service-account-ready Principal model.
 - Persistent Finding lifecycle with stable fingerprints, reconciliation, regressions and waivers.
