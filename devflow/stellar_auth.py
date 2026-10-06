@@ -18,6 +18,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+
+from . import __version__
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -27,6 +29,9 @@ DEFAULT_API_URL = "https://api.stellarcodelabs.lat"
 DEFAULT_WEB_URL = "https://app.stellarcodelabs.lat"
 DEV_API_URL = "http://localhost:3010"
 DEV_WEB_URL = "http://localhost:3011"
+# Identificación honesta de la CLI: el User-Agent por defecto de urllib (Python-urllib/x) lo bloquea Cloudflare (error 1010) en api.stellarcodelabs.lat.
+USER_AGENT = f"devflow-cli/{__version__} (+https://github.com/mathiasmora2232/DevFlow)"
+
 TOKEN_ENV_CANDIDATES = ("STELLARCODE_TOKEN", "STELLAR_MCP_TOKEN")
 EXPIRY_MARGIN = timedelta(seconds=60)
 
@@ -209,7 +214,7 @@ def auth_status(token_env: str | None = None, profile: str | None = None, now: d
 
 def http_post_json(url: str, body: dict[str, Any], timeout: float = 20.0) -> tuple[int, dict[str, Any]]:
     data = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(url, data=data, method="POST", headers={"content-type": "application/json", "accept": "application/json"})
+    req = urllib.request.Request(url, data=data, method="POST", headers={"content-type": "application/json", "accept": "application/json", "user-agent": USER_AGENT})
     try:
         with urllib.request.urlopen(req, timeout=timeout) as resp:  # noqa: S310 - fixed https endpoints
             status, raw = resp.status, resp.read()
